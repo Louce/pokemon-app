@@ -1,0 +1,13 @@
+This file is a placeholder for the app screenshot.
+
+To create a proper screenshot:
+1. Run the application with `npm start`
+2. Navigate to the Pokémon detail page for a colorful Pokémon like Charizard or Pikachu
+3. Take a screenshot showing the type-themed card background and animations
+4. Save the screenshot as screenshot.png in this directory
+5. Delete this placeholder text file
+
+The README.md references this screenshot at:
+https://raw.githubusercontent.com/yourusername/pokemon-app/main/public/screenshot.png
+
+You should update this path to match your actual repository URL if you host this project online. 

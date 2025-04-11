@@ -2,7 +2,7 @@
 
 A visually stunning web application built with React and TypeScript that allows users to browse and search for Pokémon data. This project utilizes React Hooks for state management, Framer Motion for animations, and incorporates modern UI/UX practices with dynamic theming based on Pokémon types.
 
-![Pokémon Explorer App Screenshot](https://raw.githubusercontent.com/yourusername/pokemon-app/main/public/screenshot.png)
+![Pokémon Explorer App Screenshot](https://raw.githubusercontent.com/Louce/pokemon-app/master/public/screenshot.png)
 
 ## Features
 
@@ -65,7 +65,7 @@ pokemon-app/
 
 1. Clone the repository
 ```
-git clone https://github.com/yourusername/pokemon-app.git
+git clone https://github.com/Louce/pokemon-app.git
 cd pokemon-app
 ```
 
@@ -99,4 +99,8 @@ npm start
 
 ## License
 
-This project is open source and available under the [MIT License].
+This project is open source and available under the [MIT License](https://github.com/Louce/pokemon-app/blob/master/LICENSE).
+
+## Repository
+
+View this project on GitHub: [https://github.com/Louce/pokemon-app](https://github.com/Louce/pokemon-app)

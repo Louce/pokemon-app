@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
 
 const FooterContainer = styled.footer`
-  background: linear-gradient(90deg, var(--primary-color), rgba(79, 193, 166, 0.9));
+  background: linear-gradient(90deg, var(--primary-color), rgba(230, 90, 47, 0.9));
   color: white;
   padding: 40px 24px 30px;
   margin-top: auto;
@@ -449,7 +449,7 @@ const Footer: React.FC = () => {
         <Copyright>
           <span>&copy; {new Date().getFullYear()} PokéDex</span>
           <span className="heart">❤</span>
-          <span>Made with love by Pokémon fans</span>
+          <span>Made with love by Dendi Rivaldi</span>
         </Copyright>
       </FooterContent>
     </FooterContainer>

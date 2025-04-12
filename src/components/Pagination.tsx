@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { motion } from 'framer-motion';
 
 interface PaginationProps {
   currentPage: number;
@@ -10,37 +11,68 @@ interface PaginationProps {
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
-  margin: 32px 0;
+  margin: 40px 0;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 `;
 
-const PageButton = styled.button<{ isActive?: boolean }>`
-  min-width: 40px;
-  height: 40px;
+const PageButton = styled(motion.button)<{ isActive?: boolean }>`
+  min-width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--border-radius);
+  border-radius: 12px;
   background-color: ${({ isActive }: { isActive?: boolean }) => (isActive ? 'var(--primary-color)' : 'var(--card-bg-light)')};
   color: ${({ isActive }: { isActive?: boolean }) => (isActive ? 'white' : 'var(--text-light)')};
-  border: 1px solid var(--primary-color);
-  font-weight: ${({ isActive }: { isActive?: boolean }) => (isActive ? '600' : '400')};
+  border: 2px solid ${({ isActive }: { isActive?: boolean }) => (isActive ? 'var(--primary-color)' : 'transparent')};
+  font-weight: ${({ isActive }: { isActive?: boolean }) => (isActive ? '700' : '500')};
+  font-size: 1rem;
+  box-shadow: ${({ isActive }: { isActive?: boolean }) => (isActive ? '0 6px 12px rgba(0, 0, 0, 0.15)' : '0 4px 8px rgba(0, 0, 0, 0.05)')};
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%);
+    opacity: ${({ isActive }: { isActive?: boolean }) => (isActive ? '1' : '0')};
+    transition: opacity 0.3s ease;
+  }
   
   &:hover {
-    background-color: ${({ isActive }: { isActive?: boolean }) => (isActive ? 'var(--primary-color)' : 'rgba(239, 83, 80, 0.1)')};
-    transform: translateY(-2px);
+    background-color: ${({ isActive }: { isActive?: boolean }) => (isActive ? 'var(--accent-color)' : 'rgba(79, 193, 166, 0.1)')};
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-color: ${({ isActive }: { isActive?: boolean }) => (isActive ? 'var(--accent-color)' : 'var(--primary-color)')};
+    
+    &::before {
+      opacity: 1;
+    }
   }
   
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
   }
   
   .dark-mode & {
-    background-color: ${({ isActive }: { isActive?: boolean }) => (isActive ? 'var(--primary-color)' : 'var(--card-bg-dark)')};
+    background-color: ${({ isActive }: { isActive?: boolean }) => (isActive ? 'var(--accent-color)' : 'var(--card-bg-dark)')};
     color: ${({ isActive }: { isActive?: boolean }) => (isActive ? 'white' : 'var(--text-dark)')};
+    box-shadow: ${({ isActive }: { isActive?: boolean }) => (isActive ? '0 6px 16px rgba(0, 0, 0, 0.25)' : '0 4px 8px rgba(0, 0, 0, 0.15)')};
+    
+    &:hover {
+      background-color: ${({ isActive }: { isActive?: boolean }) => (isActive ? 'var(--primary-color)' : 'rgba(79, 193, 166, 0.15)')};
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
   }
 `;
 
@@ -48,14 +80,50 @@ const EllipsisSpan = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 40px;
-  height: 40px;
+  min-width: 42px;
+  height: 42px;
   color: var(--text-light);
+  font-weight: 600;
   
   .dark-mode & {
     color: var(--text-dark);
   }
 `;
+
+const NavigationButton = styled(PageButton)`
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  
+  &:hover {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .dark-mode & {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    
+    &:hover {
+      background-color: var(--accent-color);
+      color: white;
+    }
+  }
+`;
+
+const buttonVariants = {
+  hover: {
+    scale: 1.05,
+    transition: {
+      type: 'spring',
+      stiffness: 400,
+      damping: 10
+    }
+  },
+  tap: {
+    scale: 0.95
+  }
+};
 
 const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
   // Handle edge cases
@@ -103,12 +171,16 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
 
   return (
     <PaginationContainer>
-      <PageButton 
+      <NavigationButton 
         onClick={() => onPageChange(currentPage - 1)} 
         disabled={currentPage === 1}
+        whileHover="hover"
+        whileTap="tap"
+        variants={buttonVariants}
+        aria-label="Previous page"
       >
         ◄
-      </PageButton>
+      </NavigationButton>
       
       {getPageNumbers().map((pageNumber, index) => (
         pageNumber === 'ellipsis' ? (
@@ -118,18 +190,26 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
             key={pageNumber}
             isActive={pageNumber === currentPage}
             onClick={() => onPageChange(pageNumber as number)}
+            whileHover="hover"
+            whileTap="tap"
+            variants={buttonVariants}
+            animate={pageNumber === currentPage ? { scale: 1.05 } : { scale: 1 }}
           >
             {pageNumber}
           </PageButton>
         )
       ))}
       
-      <PageButton 
+      <NavigationButton 
         onClick={() => onPageChange(currentPage + 1)} 
         disabled={currentPage === totalPages}
+        whileHover="hover"
+        whileTap="tap"
+        variants={buttonVariants}
+        aria-label="Next page"
       >
         ►
-      </PageButton>
+      </NavigationButton>
     </PaginationContainer>
   );
 };

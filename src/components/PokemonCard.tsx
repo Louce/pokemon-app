@@ -3,35 +3,83 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { PokemonDetail } from '../services/pokemonService';
 import { useTheme } from '../contexts/ThemeContext';
+import { typeColors, getBackgroundColorByType } from '../utils/typeColors';
 
 interface PokemonCardProps {
   pokemon: PokemonDetail;
+  viewMode?: 'list' | 'grid';
 }
 
-const Card = styled(Link)`
-  background-color: var(--card-bg-light);
-  border-radius: var(--border-radius);
-  box-shadow: var(--card-shadow);
-  padding: 20px;
+// Helper function to determine if a color is light or dark
+const isColorLight = (color: string): boolean => {
+  // For hex colors
+  if (color.startsWith('#')) {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 155;
+  }
+  
+  // For rgb/rgba colors
+  if (color.startsWith('rgb')) {
+    const rgbMatch = color.match(/\d+/g);
+    if (rgbMatch && rgbMatch.length >= 3) {
+      const [r, g, b] = rgbMatch.map(Number);
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 155;
+    }
+  }
+  
+  // For gradient backgrounds, default to false (assuming darker)
+  return false;
+};
+
+const Card = styled(Link)<{ 
+  viewMode?: 'list' | 'grid'; 
+  bgColor: string; 
+  textColor: string; 
+  isLight: boolean;
+  isDarkMode: boolean;
+}>`
+  background: ${props => props.isDarkMode 
+    ? `linear-gradient(135deg, rgba(25, 25, 28, 0.95) 0%, rgba(18, 18, 20, 0.98) 100%)` 
+    : props.bgColor};
+  border-radius: 24px;
+  box-shadow: ${props => props.isDarkMode 
+    ? '0 10px 25px rgba(0, 0, 0, 0.25)' 
+    : '0 10px 25px rgba(0, 0, 0, 0.12)'};
+  padding: ${props => props.viewMode === 'grid' ? '25px 20px' : '30px'};
   display: flex;
   flex-direction: column;
   align-items: center;
   text-decoration: none;
-  color: var(--text-light);
-  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  color: ${props => props.isDarkMode ? 'rgba(235, 235, 240, 0.9)' : props.textColor};
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   height: 100%;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  border: 1px solid transparent;
+  border: 2px solid ${props => props.isDarkMode 
+    ? 'rgba(40, 40, 45, 0.5)' 
+    : props.isLight 
+      ? 'rgba(0, 0, 0, 0.1)' 
+      : 'rgba(255, 255, 255, 0.2)'};
   transform-style: preserve-3d;
   perspective: 1000px;
   will-change: transform, box-shadow;
+  border-radius: 24px;
+  
+  @media (max-width: 768px) {
+    padding: ${props => props.viewMode === 'list' ? '25px' : '15px 15px'};
+  }
   
   &:hover {
-    transform: translateY(-8px) scale(1.01);
-    box-shadow: 0 15px 30px rgba(76, 175, 80, 0.15), 0 5px 15px rgba(0, 0, 0, 0.07);
-    border-color: var(--primary-color);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: ${props => props.isDarkMode 
+      ? '0 20px 40px rgba(0, 0, 0, 0.35)' 
+      : `0 20px 35px ${props.isLight ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.3)'}`};
   }
 
   &::before {
@@ -40,60 +88,41 @@ const Card = styled(Link)`
     top: 0;
     left: 0;
     width: 100%;
-    height: 0;
-    background: linear-gradient(to bottom, rgba(139, 195, 74, 0.1), transparent);
-    transition: height 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    height: 100%;
+    background: ${props => props.isDarkMode 
+      ? 'linear-gradient(135deg, rgba(35, 35, 40, 0.1) 0%, rgba(20, 20, 22, 0) 100%)' 
+      : `linear-gradient(135deg, 
+          ${props.isLight ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.15)'} 0%, 
+          ${props.isLight ? 'rgba(255, 255, 255, 0)' : 'rgba(255, 255, 255, 0)'} 100%)`};
     z-index: 0;
   }
 
   &::after {
     content: '';
     position: absolute;
-    bottom: -50px;
-    right: -50px;
-    width: 100px;
-    height: 100px;
-    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/nest-ball.png');
+    bottom: -30px;
+    right: -30px;
+    width: 130px;
+    height: 130px;
+    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png');
     background-size: contain;
     background-repeat: no-repeat;
-    opacity: 0.07;
-    transform: rotate(-15deg);
+    opacity: ${props => props.isDarkMode ? '0.08' : props.isLight ? '0.1' : '0.15'};
+    filter: brightness(${props => props.isDarkMode ? '0.7' : props.isLight ? '1' : '2'});
+    transform: rotate(0deg);
     transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 0;
   }
   
-  &:hover::before {
-    height: 100%;
-  }
-
   &:hover::after {
-    transform: rotate(0deg) scale(1.2);
-    opacity: 0.12;
-  }
-
-  .dark-mode & {
-    background-color: var(--card-bg-dark);
-    color: var(--text-dark);
-    box-shadow: var(--card-shadow-dark);
-    
-    &::before {
-      background: linear-gradient(to bottom, rgba(79, 193, 166, 0.1), transparent);
-    }
-    
-    &::after {
-      background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dusk-ball.png');
-    }
-    
-    &:hover {
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 15px rgba(79, 193, 166, 0.2);
-      border-color: var(--primary-color);
-    }
+    transform: rotate(15deg) scale(1.2);
+    opacity: ${props => props.isDarkMode ? '0.1' : props.isLight ? '0.15' : '0.2'};
   }
 `;
 
-const PokemonImage = styled.div`
-  width: 170px;
-  height: 170px;
+const PokemonImage = styled.div<{ viewMode?: 'list' | 'grid'; isDarkMode: boolean }>`
+  width: ${props => props.viewMode === 'grid' ? '150px' : '200px'};
+  height: ${props => props.viewMode === 'grid' ? '150px' : '200px'};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,35 +130,31 @@ const PokemonImage = styled.div`
   position: relative;
   z-index: 1;
   transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  transform-style: preserve-3d;
+  
+  @media (max-width: 768px) {
+    width: ${props => props.viewMode === 'grid' ? '130px' : '160px'};
+    height: ${props => props.viewMode === 'grid' ? '130px' : '160px'};
+  }
 
   &::before {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 130px;
-    height: 130px;
+    width: ${props => props.viewMode === 'grid' ? '130px' : '170px'};
+    height: ${props => props.viewMode === 'grid' ? '130px' : '170px'};
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(79, 193, 166, 0.3) 0%, rgba(79, 193, 166, 0) 70%);
-    transform: translate(-50%, -50%);
-    z-index: -1;
-    opacity: 0.7;
-    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background-color: rgba(0, 0, 0, 0.03);
+    background: ${props => props.isDarkMode 
+      ? 'rgba(45, 45, 50, 0.25)' 
+      : 'rgba(255, 255, 255, 0.25)'};
     transform: translate(-50%, -50%);
     z-index: -1;
     transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    
+    @media (max-width: 768px) {
+      width: ${props => props.viewMode === 'grid' ? '100px' : '140px'};
+      height: ${props => props.viewMode === 'grid' ? '100px' : '140px'};
+    }
   }
 
   img {
@@ -137,211 +162,290 @@ const PokemonImage = styled.div`
     height: 100%;
     object-fit: contain;
     transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    filter: ${props => props.isDarkMode 
+      ? 'drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3)) brightness(0.9)' 
+      : 'drop-shadow(0 5px 15px rgba(0, 0, 0, 0.25))'};
     z-index: 2;
-    will-change: transform, filter;
-  }
-
-  ${Card}:hover & {
-    transform: translateZ(20px);
+    will-change: transform;
+    transform: translateY(0) scale(1.0);
   }
 
   ${Card}:hover & img {
-    transform: scale(1.15);
-    filter: drop-shadow(0 10px 15px rgba(79, 193, 166, 0.2));
-    animation: spring 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    transform: scale(1.18) translateY(-8px);
+    filter: ${props => props.isDarkMode 
+      ? 'drop-shadow(0 15px 20px rgba(0, 0, 0, 0.4)) brightness(0.9)' 
+      : 'drop-shadow(0 15px 20px rgba(0, 0, 0, 0.3))'};
   }
   
   ${Card}:hover &::before {
-    width: 160px;
-    height: 160px;
-    opacity: 0.9;
-    background: radial-gradient(circle, rgba(79, 193, 166, 0.3) 0%, rgba(79, 193, 166, 0) 70%);
-  }
-  
-  ${Card}:hover &::after {
-    width: 150px;
-    height: 150px;
-    background-color: rgba(0, 0, 0, 0.05);
-    filter: blur(5px);
-  }
-  
-  .dark-mode ${Card} &::before {
-    background: radial-gradient(circle, rgba(79, 193, 166, 0.3) 0%, rgba(79, 193, 166, 0) 70%);
-  }
-  
-  .dark-mode ${Card} &::after {
-    background-color: rgba(255, 255, 255, 0.03);
-  }
-  
-  .dark-mode ${Card}:hover &::after {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-  
-  .dark-mode ${Card} & img {
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) brightness(1.05);
-  }
-  
-  .dark-mode ${Card}:hover & img {
-    filter: drop-shadow(0 10px 20px rgba(79, 193, 166, 0.4)) brightness(1.1);
+    width: ${props => props.viewMode === 'grid' ? '140px' : '180px'};
+    height: ${props => props.viewMode === 'grid' ? '140px' : '180px'};
+    opacity: 0.5;
+    
+    @media (max-width: 768px) {
+      width: ${props => props.viewMode === 'grid' ? '110px' : '150px'};
+      height: ${props => props.viewMode === 'grid' ? '110px' : '150px'};
+    }
   }
 `;
 
-const PokemonId = styled.span`
+const PokemonId = styled.span<{ 
+  viewMode?: 'list' | 'grid'; 
+  isLight: boolean;
+  isDarkMode: boolean; 
+}>`
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: var(--accent-color);
-  color: white;
-  padding: 6px 14px;
-  border-radius: 12px;
-  font-size: 0.85rem;
+  top: 18px;
+  right: 18px;
+  background-color: ${props => props.isDarkMode
+    ? 'rgba(35, 35, 40, 0.7)'
+    : props.isLight 
+      ? 'rgba(0, 0, 0, 0.1)' 
+      : 'rgba(255, 255, 255, 0.35)'};
+  color: inherit;
+  padding: ${props => props.viewMode === 'grid' ? '6px 12px' : '8px 16px'};
+  border-radius: 30px;
+  font-size: ${props => props.viewMode === 'grid' ? '0.9rem' : '1rem'};
   font-weight: 700;
   z-index: 2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  backdrop-filter: blur(5px);
+  box-shadow: ${props => props.isDarkMode 
+    ? '0 2px 10px rgba(0, 0, 0, 0.2)'
+    : '0 2px 10px rgba(0, 0, 0, 0.15)'};
   
-  ${Card}:hover & {
-    transform: translateY(-3px) translateZ(15px);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
-    animation: pulse 2s infinite;
-  }
-  
-  .dark-mode & {
-    background-color: var(--accent-color);
-    color: white;
-    box-shadow: 0 2px 10px rgba(255, 93, 62, 0.3);
+  @media (max-width: 480px) {
+    padding: ${props => props.viewMode === 'grid' ? '4px 10px' : '6px 12px'};
+    font-size: ${props => props.viewMode === 'grid' ? '0.8rem' : '0.9rem'};
+    top: 12px;
+    right: 12px;
   }
 `;
 
-const PokemonName = styled.h3`
-  margin: 0 0 8px 0;
-  font-size: 1.4rem;
-  text-transform: capitalize;
-  text-align: center;
-  position: relative;
-  z-index: 1;
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  font-family: 'Montserrat', sans-serif;
-  letter-spacing: -0.01em;
-  transform-style: preserve-3d;
-  
-  ${Card}:hover & {
-    color: var(--primary-color);
-    transform: translateZ(15px);
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .dark-mode ${Card}:hover & {
-    color: var(--primary-color);
-    text-shadow: 2px 2px 8px rgba(79, 193, 166, 0.2);
-  }
-`;
-
-const TypesContainer = styled.div`
+const InfoContainer = styled.div<{ viewMode?: 'list' | 'grid' }>`
+  flex: 1;
   display: flex;
+  flex-direction: column;
+  text-align: center;
+  z-index: 1;
+  width: 100%;
+`;
+
+const PokemonName = styled.h3<{ viewMode?: 'list' | 'grid'; isDarkMode: boolean }>`
+  margin: 0 0 12px;
+  font-size: ${props => props.viewMode === 'grid' ? '1.3rem' : '1.8rem'};
+  font-weight: 800;
+  text-transform: capitalize;
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease;
+  opacity: ${props => props.isDarkMode ? '0.9' : '1'};
+  
+  @media (max-width: 768px) {
+    font-size: ${props => props.viewMode === 'grid' ? '1.2rem' : '1.5rem'};
+    margin-bottom: ${props => props.viewMode === 'grid' ? '10px' : '12px'};
+  }
+  
+  @media (max-width: 480px) {
+    font-size: ${props => props.viewMode === 'grid' ? '1.1rem' : '1.4rem'};
+  }
+`;
+
+const PokemonTypes = styled.div<{ viewMode?: 'list' | 'grid' }>`
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: ${props => props.viewMode === 'grid' ? '8px' : '12px'};
+  justify-content: center;
+`;
+
+const PokemonType = styled.span<{ 
+  viewMode?: 'list' | 'grid'; 
+  typeColor: string;
+  isLight: boolean;
+  isDarkMode: boolean;
+}>`
+  background-color: ${props => props.isDarkMode
+    ? 'rgba(40, 40, 45, 0.6)'
+    : props.isLight 
+      ? `rgba(0, 0, 0, 0.08)` 
+      : `${props.typeColor}90`
+  };
+  color: ${props => props.isDarkMode ? 'rgba(235, 235, 240, 0.9)' : '#fff'};
+  padding: ${props => props.viewMode === 'grid' ? '6px 12px' : '8px 16px'};
+  border-radius: 30px;
+  font-size: ${props => props.viewMode === 'grid' ? '0.85rem' : '0.95rem'};
+  font-weight: 600;
+  text-transform: capitalize;
+  box-shadow: ${props => props.isDarkMode
+    ? '0 3px 10px rgba(0, 0, 0, 0.15)'
+    : '0 3px 10px rgba(0, 0, 0, 0.1)'};
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+  border: 1px solid ${props => props.isDarkMode
+    ? 'rgba(55, 55, 60, 0.5)'
+    : props.isLight 
+      ? 'rgba(0, 0, 0, 0.1)' 
+      : 'rgba(255, 255, 255, 0.3)'
+  };
+  
+  @media (max-width: 768px) {
+    padding: ${props => props.viewMode === 'grid' ? '5px 10px' : '7px 14px'};
+    font-size: ${props => props.viewMode === 'grid' ? '0.75rem' : '0.85rem'};
+  }
+  
+  ${Card}:hover & {
+    background-color: ${props => props.isDarkMode
+      ? 'rgba(50, 50, 55, 0.7)'
+      : props.isLight 
+        ? `rgba(0, 0, 0, 0.12)` 
+        : `${props.typeColor}`
+    };
+    box-shadow: ${props => props.isDarkMode
+      ? '0 4px 12px rgba(0, 0, 0, 0.2)'
+      : '0 4px 12px rgba(0, 0, 0, 0.15)'};
+    transform: translateY(-2px);
+  }
+`;
+
+const StatContainer = styled.div<{ viewMode?: 'list' | 'grid' }>`
+  display: ${props => props.viewMode === 'grid' ? 'none' : 'flex'};
+  gap: 20px;
+  margin-top: 20px;
+  align-items: center;
   flex-wrap: wrap;
   justify-content: center;
+`;
+
+const StatItem = styled.div<{ 
+  isLight: boolean;
+  isDarkMode: boolean;
+}>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   position: relative;
-  z-index: 1;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  transform-style: preserve-3d;
-  
-  ${Card}:hover & {
-    transform: translateZ(10px);
-  }
+  background: ${props => props.isDarkMode
+    ? 'rgba(35, 35, 40, 0.6)'
+    : props.isLight 
+      ? 'rgba(0, 0, 0, 0.08)' 
+      : 'rgba(255, 255, 255, 0.2)'
+  };
+  padding: 8px 16px;
+  border-radius: 16px;
+  backdrop-filter: blur(4px);
 `;
 
-const TypeBadge = styled.span`
-  padding: 6px 14px;
-  border-radius: 30px;
-  font-size: 0.9rem;
+const StatLabel = styled.span<{ isDarkMode: boolean }>`
+  font-size: 0.8rem;
+  color: inherit;
+  opacity: ${props => props.isDarkMode ? '0.8' : '0.9'};
+  margin-bottom: 5px;
+  font-weight: 500;
   text-transform: capitalize;
-  font-weight: 600;
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  letter-spacing: 0.5px;
-  transform-style: preserve-3d;
-  
-  ${Card}:hover & {
-    transform: translateY(-3px) translateZ(5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  &:nth-child(odd) {
-    animation-delay: 0.2s;
-  }
-  
-  &:nth-child(1) {
-    transition-delay: 0.05s;
-  }
-  
-  &:nth-child(2) {
-    transition-delay: 0.1s;
-  }
-  
-  .dark-mode & {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .dark-mode ${Card}:hover & {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  }
 `;
 
-// Type colors for badges with better contrast
-const typeColors: Record<string, string> = {
-  normal: '#A8A77A',
-  fire: '#FF6B3D',
-  water: '#4D90D5',
-  electric: '#F8CF32',
-  grass: '#68BB56',
-  ice: '#74D0C3',
-  fighting: '#CE416B',
-  poison: '#AB5ACA',
-  ground: '#D8765E',
-  flying: '#767DC6',
-  psychic: '#F45C85',
-  bug: '#A1B135',
-  rock: '#BBAA67',
-  ghost: '#6C5A97',
-  dragon: '#7764D0',
-  dark: '#5E5366',
-  steel: '#8A8EB5',
-  fairy: '#ED91E6',
-  default: '#777'
-};
+const StatValue = styled.span<{ isDarkMode: boolean }>`
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: inherit;
+  position: relative;
+  opacity: ${props => props.isDarkMode ? '0.9' : '1'};
+`;
 
-const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon }) => {
+const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, viewMode = 'list' }) => {
   const { darkMode } = useTheme();
   
+  // Get main stats to display
+  const hp = pokemon.stats.find(stat => stat.stat.name === 'hp')?.base_stat || 0;
+  const attack = pokemon.stats.find(stat => stat.stat.name === 'attack')?.base_stat || 0;
+  const defense = pokemon.stats.find(stat => stat.stat.name === 'defense')?.base_stat || 0;
+  
+  // Get the primary type for background color
+  const primaryType = pokemon.types[0]?.type.name || 'normal';
+  const bgColor = getBackgroundColorByType(primaryType);
+  const typeHexColor = typeColors[primaryType] || typeColors.normal;
+  const textColor = '#ffffff';
+  
+  // Check if background color is light or dark
+  const isLight = isColorLight(typeHexColor);
+  
   return (
-    <Card to={`/pokemon/${pokemon.id}`}>
-      <PokemonId>#{pokemon.id.toString().padStart(3, '0')}</PokemonId>
-      <PokemonImage>
+    <Card 
+      to={`/pokemon/${pokemon.id}`} 
+      viewMode={viewMode}
+      bgColor={bgColor}
+      textColor={textColor}
+      isLight={isLight}
+      isDarkMode={darkMode}
+    >
+      <PokemonId 
+        viewMode={viewMode} 
+        isLight={isLight}
+        isDarkMode={darkMode}
+      >
+        #{pokemon.id.toString().padStart(3, '0')}
+      </PokemonId>
+      
+      <PokemonImage 
+        viewMode={viewMode}
+        isDarkMode={darkMode}
+      >
         <img 
-          src={pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default} 
+          src={pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default}
           alt={pokemon.name}
         />
       </PokemonImage>
-      <PokemonName>{pokemon.name}</PokemonName>
-      <TypesContainer>
-        {pokemon.types.map((typeInfo) => (
-          <TypeBadge 
-            key={typeInfo.type.name}
-            style={{ 
-              backgroundColor: darkMode ? '#1A237E' : typeColors[typeInfo.type.name] || typeColors.default,
-              color: darkMode 
-                ? typeColors[typeInfo.type.name] || typeColors.default 
-                : ['electric', 'normal', 'ground'].includes(typeInfo.type.name) ? '#333' : '#fff'
-            }}
-          >
-            {typeInfo.type.name}
-          </TypeBadge>
-        ))}
-      </TypesContainer>
+      
+      <InfoContainer viewMode={viewMode}>
+        <PokemonName 
+          viewMode={viewMode}
+          isDarkMode={darkMode}
+        >
+          {pokemon.name}
+        </PokemonName>
+        
+        <PokemonTypes viewMode={viewMode}>
+          {pokemon.types.map(typeInfo => (
+            <PokemonType 
+              key={typeInfo.type.name}
+              viewMode={viewMode}
+              typeColor={typeColors[typeInfo.type.name] || typeColors.normal}
+              isLight={isColorLight(typeColors[typeInfo.type.name] || typeColors.normal)}
+              isDarkMode={darkMode}
+            >
+              {typeInfo.type.name}
+            </PokemonType>
+          ))}
+        </PokemonTypes>
+        
+        {viewMode === 'list' && (
+          <StatContainer viewMode={viewMode}>
+            <StatItem 
+              isLight={isLight}
+              isDarkMode={darkMode}
+            >
+              <StatLabel isDarkMode={darkMode}>HP</StatLabel>
+              <StatValue isDarkMode={darkMode}>{hp}</StatValue>
+            </StatItem>
+            
+            <StatItem 
+              isLight={isLight}
+              isDarkMode={darkMode}
+            >
+              <StatLabel isDarkMode={darkMode}>Attack</StatLabel>
+              <StatValue isDarkMode={darkMode}>{attack}</StatValue>
+            </StatItem>
+            
+            <StatItem 
+              isLight={isLight}
+              isDarkMode={darkMode}
+            >
+              <StatLabel isDarkMode={darkMode}>Defense</StatLabel>
+              <StatValue isDarkMode={darkMode}>{defense}</StatValue>
+            </StatItem>
+          </StatContainer>
+        )}
+      </InfoContainer>
     </Card>
   );
 };

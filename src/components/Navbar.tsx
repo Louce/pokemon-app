@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
 
 const NavbarContainer = styled.nav`
-  background: linear-gradient(90deg, var(--primary-color), rgba(79, 193, 166, 0.9));
+  background: linear-gradient(90deg, var(--primary-color), #6d278a);
   color: white;
   padding: 1rem;
   display: flex;
@@ -37,14 +37,14 @@ const NavbarContainer = styled.nav`
     right: 5%;
     width: 300px;
     height: 300px;
-    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png'); /* Pikachu */
+    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png'); /* Gengar */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: right center;
     opacity: 0.08;
     transform: translateY(-50%) translateZ(10px);
     z-index: -1;
-    filter: drop-shadow(0 0 15px rgba(247, 208, 44, 0.4));
+    filter: drop-shadow(0 0 15px rgba(224, 86, 253, 0.4));
     animation: navPikachu 15s ease-in-out infinite alternate;
   }
   
@@ -54,13 +54,13 @@ const NavbarContainer = styled.nav`
   }
 
   .dark-mode & {
-    background: linear-gradient(90deg, #2C3E50, #1A2639);
+    background: linear-gradient(90deg, #3d2953, #2d1b3e);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     
     &::after {
-      background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png'); /* Charizard */
+      background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png'); /* Gengar */
       opacity: 0.1;
-      filter: drop-shadow(0 0 20px rgba(255, 93, 62, 0.5));
+      filter: drop-shadow(0 0 20px rgba(224, 86, 253, 0.5));
     }
   }
 `;

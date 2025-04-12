@@ -1,30 +1,30 @@
 :root {
-  /* Light theme - Vibrant Pokémon World */
-  --primary-color: #2ce764; /* Bulbasaur teal-green */
-  --secondary-color: #F7D02C; /* Pikachu yellow */
-  --accent-color: #FF5D3E; /* Charizard orange-red */
-  --background-light: #F8FCFA; /* Soft light background */
+  /* Light theme - Purple Pokemon Theme */
+  --primary-color: #8d44ad; /* Main purple */
+  --secondary-color: #e056fd; /* Bright magenta/pink */
+  --accent-color: #b33ffb; /* Violet accent */
+  --background-light: #f8f8ff; /* Light lavender background */
   --text-light: #2E4052; /* Deep blue-gray text */
   --card-bg-light: #FFFFFF;
-  --card-shadow: 0 8px 20px rgba(79, 193, 166, 0.15), 0 2px 4px rgba(0, 0, 0, 0.05);
-  --input-bg-light: rgba(79, 193, 166, 0.08);
-  --border-color-light: #E0F5EE; /* Light green border */
-  --hover-light: rgba(79, 193, 166, 0.1);
-  --gradient-light: linear-gradient(135deg, rgba(79, 193, 166, 0.12) 0%, rgba(247, 208, 44, 0.12) 100%);
+  --card-shadow: 0 8px 20px rgba(141, 68, 173, 0.15), 0 2px 4px rgba(0, 0, 0, 0.05);
+  --input-bg-light: rgba(141, 68, 173, 0.08);
+  --border-color-light: #e9d5f0; /* Light purple border */
+  --hover-light: rgba(141, 68, 173, 0.1);
+  --gradient-light: linear-gradient(135deg, rgba(141, 68, 173, 0.12) 0%, rgba(224, 86, 253, 0.12) 100%);
   --nav-item-bg-light: rgba(255, 255, 255, 0.8);
-  --pokeball-glow-light: 0 0 20px rgba(255, 93, 62, 0.6);
+  --pokeball-glow-light: 0 0 20px rgba(224, 86, 253, 0.6);
   
-  /* Dark theme - Mystical Pokémon Night */
-  --background-dark: #1A2639; /* Deep navy background */
+  /* Dark theme - Deep Purple Pokemon Night */
+  --background-dark: #2d1b3e; /* Deep purple background */
   --text-dark: #F1F2EB; /* Soft white text */
-  --card-bg-dark: #2C3E50; /* Rich dark blue-gray */
-  --card-shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 8px rgba(79, 193, 166, 0.3);
-  --input-bg-dark: rgba(79, 193, 166, 0.1);
-  --border-color-dark: #3C546D; /* Medium blue-gray */
-  --hover-dark: rgba(247, 208, 44, 0.15); /* Yellow hover */
-  --gradient-dark: linear-gradient(135deg, rgba(79, 193, 166, 0.2) 0%, rgba(247, 208, 44, 0.1) 100%);
-  --nav-item-bg-dark: rgba(28, 40, 59, 0.8);
-  --pokeball-glow-dark: 0 0 25px rgba(255, 93, 62, 0.7);
+  --card-bg-dark: #3d2953; /* Rich dark purple */
+  --card-shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 8px rgba(141, 68, 173, 0.3);
+  --input-bg-dark: rgba(141, 68, 173, 0.1);
+  --border-color-dark: #4a3063; /* Medium purple */
+  --hover-dark: rgba(224, 86, 253, 0.15); /* Pink hover */
+  --gradient-dark: linear-gradient(135deg, rgba(141, 68, 173, 0.2) 0%, rgba(224, 86, 253, 0.1) 100%);
+  --nav-item-bg-dark: rgba(45, 27, 62, 0.8);
+  --pokeball-glow-dark: 0 0 25px rgba(224, 86, 253, 0.7);
   
   /* Common variables */
   --spacing-sm: 8px;
@@ -58,15 +58,15 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png');
+  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png');
   background-size: 200px;
   background-repeat: no-repeat;
   background-position: 95% 5%;
-  opacity: 0.05;
+  opacity: 0.08;
   z-index: -1;
   pointer-events: none;
   transform: translateZ(0);
-  filter: drop-shadow(0 0 8px rgba(247, 208, 44, 0.5));
+  filter: drop-shadow(0 0 8px rgba(224, 86, 253, 0.5));
   animation: pokemonFloat 15s ease-in-out infinite;
 }
 
@@ -100,7 +100,7 @@ body::after {
   right: 0;
   width: 250px;
   height: 250px;
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png');
+  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: bottom right;
@@ -109,7 +109,7 @@ body::after {
   pointer-events: none;
   transform-style: preserve-3d;
   transform: translateZ(10px);
-  filter: drop-shadow(0 0 10px rgba(79, 193, 166, 0.5));
+  filter: drop-shadow(0 0 10px rgba(141, 68, 173, 0.5));
   animation: bulbasaurFloat 18s ease-in-out infinite;
 }
 
@@ -138,15 +138,15 @@ body.dark-mode {
 }
 
 body.dark-mode::before {
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png');
-  opacity: 0.08;
-  filter: drop-shadow(0 0 15px rgba(247, 208, 44, 0.6)) brightness(0.9);
+  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png');
+  opacity: 0.1;
+  filter: drop-shadow(0 0 15px rgba(224, 86, 253, 0.8)) brightness(0.9);
 }
 
 body.dark-mode::after {
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png');
+  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png');
   opacity: 0.08;
-  filter: drop-shadow(0 0 15px rgba(79, 193, 166, 0.6)) brightness(0.9);
+  filter: drop-shadow(0 0 15px rgba(141, 68, 173, 0.6)) brightness(0.9);
 }
 
 .App {
@@ -168,14 +168,14 @@ body.dark-mode::after {
   right: 0;
   width: 300px;
   height: 300px;
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png');
+  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/93.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: top right;
   opacity: 0.05;
   z-index: 0;
   transform: translateZ(15px) rotate(5deg);
-  filter: drop-shadow(0 0 20px rgba(255, 93, 62, 0.6));
+  filter: drop-shadow(0 0 20px rgba(224, 86, 253, 0.6));
   animation: charizardFloat 20s ease-in-out infinite;
 }
 

@@ -405,7 +405,7 @@ const Footer: React.FC = () => {
   
   return (
     <FooterContainer>
-      <PokedexGraphic />
+      <PokedexGraphic className={darkMode ? 'dark-mode' : ''} />
       <FooterContent>
         <FooterLogo>
           <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="PokéDex" />

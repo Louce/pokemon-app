@@ -401,7 +401,7 @@ const PokedexGraphic = styled.div`
 `;
 
 const Footer: React.FC = () => {
-  const { /* darkMode */ } = useTheme();
+  const { darkMode: _darkMode } = useTheme();
   
   return (
     <FooterContainer>

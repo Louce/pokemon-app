@@ -52,22 +52,7 @@ body {
 }
 
 body::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png');
-  background-size: 200px;
-  background-repeat: no-repeat;
-  background-position: 95% 5%;
-  opacity: 0.08;
-  z-index: -1;
-  pointer-events: none;
-  transform: translateZ(0);
-  filter: drop-shadow(0 0 8px rgba(224, 86, 253, 0.5));
-  animation: pokemonFloat 15s ease-in-out infinite;
+  display: none; /* Remove the background animation */
 }
 
 @keyframes pokemonFloat {
@@ -94,23 +79,7 @@ body::before {
 }
 
 body::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 250px;
-  height: 250px;
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: bottom right;
-  opacity: 0.06;
-  z-index: -1;
-  pointer-events: none;
-  transform-style: preserve-3d;
-  transform: translateZ(10px);
-  filter: drop-shadow(0 0 10px rgba(141, 68, 173, 0.5));
-  animation: bulbasaurFloat 18s ease-in-out infinite;
+  display: none; /* Remove the background animation */
 }
 
 @keyframes bulbasaurFloat {
@@ -138,15 +107,11 @@ body.dark-mode {
 }
 
 body.dark-mode::before {
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png');
-  opacity: 0.1;
-  filter: drop-shadow(0 0 15px rgba(224, 86, 253, 0.8)) brightness(0.9);
+  display: none; /* Remove the background animation */
 }
 
 body.dark-mode::after {
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png');
-  opacity: 0.08;
-  filter: drop-shadow(0 0 15px rgba(141, 68, 173, 0.6)) brightness(0.9);
+  display: none; /* Remove the background animation */
 }
 
 .App {
@@ -162,21 +127,7 @@ body.dark-mode::after {
 }
 
 .App::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 300px;
-  height: 300px;
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/93.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: top right;
-  opacity: 0.05;
-  z-index: 0;
-  transform: translateZ(15px) rotate(5deg);
-  filter: drop-shadow(0 0 20px rgba(224, 86, 253, 0.6));
-  animation: charizardFloat 20s ease-in-out infinite;
+  display: none; /* Remove the background animation */
 }
 
 @keyframes charizardFloat {

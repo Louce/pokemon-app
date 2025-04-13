@@ -9,7 +9,6 @@ import PokemonCard from '../components/PokemonCard';
 import Pagination from '../components/Pagination';
 import Loading from '../components/Loading';
 import { useTheme } from '../contexts/ThemeContext';
-import { Link } from 'react-router-dom';
 
 const HomeContainer = styled.div`
   min-height: 100%;
@@ -657,116 +656,6 @@ const typeColors: Record<string, string> = {
   fairy: '#ED91E6'
 };
 
-// Featured Pokemon Section
-const FeaturedSection = styled.div`
-  margin: 30px 0;
-  padding: 20px;
-  background: rgba(141, 68, 173, 0.1);
-  border-radius: 24px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  position: relative;
-  overflow: hidden;
-  
-  .dark-mode & {
-    background: rgba(224, 86, 253, 0.05);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-  }
-`;
-
-const FeaturedTitle = styled.h2`
-  font-size: 1.8rem;
-  margin-bottom: 20px;
-  color: var(--primary-color);
-  position: relative;
-  display: inline-block;
-  font-weight: 700;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    height: 3px;
-    width: 50px;
-    background: var(--secondary-color);
-    border-radius: 3px;
-  }
-  
-  .dark-mode & {
-    color: var(--secondary-color);
-    
-    &::after {
-      background: var(--accent-color);
-    }
-  }
-`;
-
-const FeaturedGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
-`;
-
-const FeaturedPokemonCard = styled(Link)`
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 20px;
-  padding: 15px;
-  text-decoration: none;
-  color: var(--text-light);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  }
-  
-  .dark-mode & {
-    background: var(--card-bg-dark);
-    color: var(--text-dark);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    
-    &:hover {
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-    }
-  }
-`;
-
-const FeaturedPokemonImage = styled.img`
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  margin-right: 15px;
-`;
-
-const FeaturedPokemonInfo = styled.div`
-  flex: 1;
-`;
-
-const FeaturedPokemonName = styled.h3`
-  font-size: 1.2rem;
-  margin-bottom: 5px;
-  text-transform: capitalize;
-`;
-
-const FeaturedPokemonType = styled.span<{ type: string }>`
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 16px;
-  font-size: 0.8rem;
-  margin-right: 5px;
-  color: white;
-  background-color: ${props => typeColors[props.type] || typeColors.normal};
-`;
-
 // Updated Type colors for filtering with better contrast
 const POKEMON_TYPES = Object.keys(typeColors);
 
@@ -1152,34 +1041,6 @@ const Home: React.FC = () => {
           Discover and explore detailed information about your favorite Pokémon
         </Subtitle>
       </Header>
-      
-      <FeaturedSection>
-        <FeaturedTitle>Featured Pokémon</FeaturedTitle>
-        <FeaturedGrid>
-          <FeaturedPokemonCard to="/pokemon/25">
-            <FeaturedPokemonImage src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu" />
-            <FeaturedPokemonInfo>
-              <FeaturedPokemonName>Pikachu</FeaturedPokemonName>
-              <FeaturedPokemonType type="electric">electric</FeaturedPokemonType>
-            </FeaturedPokemonInfo>
-          </FeaturedPokemonCard>
-          <FeaturedPokemonCard to="/pokemon/94">
-            <FeaturedPokemonImage src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png" alt="Gengar" />
-            <FeaturedPokemonInfo>
-              <FeaturedPokemonName>Gengar</FeaturedPokemonName>
-              <FeaturedPokemonType type="ghost">ghost</FeaturedPokemonType>
-              <FeaturedPokemonType type="poison">poison</FeaturedPokemonType>
-            </FeaturedPokemonInfo>
-          </FeaturedPokemonCard>
-          <FeaturedPokemonCard to="/pokemon/150">
-            <FeaturedPokemonImage src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png" alt="Mewtwo" />
-            <FeaturedPokemonInfo>
-              <FeaturedPokemonName>Mewtwo</FeaturedPokemonName>
-              <FeaturedPokemonType type="psychic">psychic</FeaturedPokemonType>
-            </FeaturedPokemonInfo>
-          </FeaturedPokemonCard>
-        </FeaturedGrid>
-      </FeaturedSection>
       
       <FiltersContainer>
         <SearchForm onSubmit={handleSearch}>

@@ -66,8 +66,6 @@ const Card = styled(Link)<{
     : props.isLight 
       ? 'rgba(0, 0, 0, 0.1)' 
       : 'rgba(255, 255, 255, 0.2)'};
-  transform-style: preserve-3d;
-  perspective: 1000px;
   will-change: transform, box-shadow;
   border-radius: 24px;
   
@@ -83,13 +81,13 @@ const Card = styled(Link)<{
   }
   
   &:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-5px);
     box-shadow: ${props => props.isDarkMode 
       ? '0 20px 40px rgba(0, 0, 0, 0.35)' 
       : `0 20px 35px ${props.isLight ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.3)'}`};
       
     @media (max-width: 768px) {
-      transform: translateY(-5px) scale(1.01);
+      transform: translateY(-3px);
     }
   }
 
@@ -120,14 +118,7 @@ const Card = styled(Link)<{
     background-repeat: no-repeat;
     opacity: ${props => props.isDarkMode ? '0.08' : props.isLight ? '0.1' : '0.15'};
     filter: brightness(${props => props.isDarkMode ? '0.7' : props.isLight ? '1' : '2'});
-    transform: rotate(0deg);
-    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 0;
-  }
-  
-  &:hover::after {
-    transform: rotate(15deg) scale(1.2);
-    opacity: ${props => props.isDarkMode ? '0.1' : props.isLight ? '0.15' : '0.2'};
   }
 `;
 

@@ -36,16 +36,9 @@ const FooterContainer = styled.footer`
     background-size: contain;
     background-repeat: no-repeat;
     opacity: 0.08;
-    transform: translate(30%, 30%) translateZ(10px) rotate(-5deg);
+    transform: translate(30%, 30%);
     z-index: 0;
     filter: drop-shadow(0 0 15px rgba(79, 193, 166, 0.4));
-    animation: footerBulbasaur 20s ease-in-out infinite alternate;
-  }
-  
-  @keyframes footerBulbasaur {
-    0% { transform: translate(30%, 30%) translateZ(10px) rotate(-5deg); }
-    50% { transform: translate(25%, 25%) translateZ(20px) rotate(-2deg); }
-    100% { transform: translate(30%, 30%) translateZ(10px) rotate(-5deg); }
   }
   
   .dark-mode & {
@@ -96,7 +89,6 @@ const FooterLogo = styled.div`
     height: 35px;
     width: auto;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-    animation: rotateBall 15s linear infinite;
     transition: all 0.5s ease;
     transform-style: preserve-3d;
     transform-origin: center;
@@ -107,14 +99,8 @@ const FooterLogo = styled.div`
   }
   
   &:hover img {
-    animation: rotateBall 4s linear infinite;
     filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
     transform: scale(1.1) translateZ(15px);
-  }
-  
-  @keyframes rotateBall {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
   
   .text-accent {
@@ -195,17 +181,14 @@ const FooterDivider = styled.div`
     top: 50%;
     transform: translateY(-50%) translateZ(10px);
     box-shadow: 0 0 8px rgba(247, 208, 44, 0.6);
-    animation: pulse 3s infinite alternate;
   }
   
   &::before {
     left: 25%;
-    animation-delay: 0.5s;
   }
   
   &::after {
     right: 25%;
-    animation-delay: 1s;
   }
   
   .dark-mode & {
@@ -384,14 +367,7 @@ const PokedexGraphic = styled.div`
   background-size: contain;
   background-repeat: no-repeat;
   filter: drop-shadow(0 0 15px rgba(79, 193, 166, 0.4));
-  animation: squirtleFloat 16s ease-in-out infinite alternate;
   transform-style: preserve-3d;
-  
-  @keyframes squirtleFloat {
-    0% { transform: translateZ(10px) rotate(5deg); }
-    50% { transform: translateZ(25px) rotate(0deg); }
-    100% { transform: translateZ(10px) rotate(5deg); }
-  }
   
   .dark-mode & {
     background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png'); /* Charmander */

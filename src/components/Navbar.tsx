@@ -91,17 +91,11 @@ const Logo = styled(Link)`
     height: 45px;
     width: auto;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-    animation: floatBall 3s ease-in-out infinite;
     transition: transform 0.3s ease;
     
     @media (max-width: 768px) {
       height: 35px;
     }
-  }
-  
-  @keyframes floatBall {
-    0%, 100% { transform: translateY(0) rotate(0); }
-    50% { transform: translateY(-5px) rotate(10deg); }
   }
 `;
 

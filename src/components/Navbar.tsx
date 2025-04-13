@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
 
+// Main navbar container
 const NavbarContainer = styled.nav`
   background: linear-gradient(90deg, var(--primary-color), #6d278a);
   color: white;
@@ -10,548 +11,538 @@ const NavbarContainer = styled.nav`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  transition: all var(--transition-speed);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   position: relative;
   z-index: 100;
   overflow: hidden;
-  transform-style: preserve-3d;
-
+  
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-      radial-gradient(circle at top left, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 15%),
+      radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 20%);
     z-index: -1;
-  }
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: 5%;
-    width: 300px;
-    height: 300px;
-    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png'); /* Gengar */
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: right center;
-    opacity: 0.08;
-    transform: translateY(-50%) translateZ(10px);
-    z-index: -1;
-    filter: drop-shadow(0 0 15px rgba(224, 86, 253, 0.4));
-    animation: navPikachu 15s ease-in-out infinite alternate;
-  }
-  
-  @keyframes navPikachu {
-    0%, 100% { transform: translateY(-50%) translateZ(10px); }
-    50% { transform: translateY(-55%) translateZ(20px); }
   }
 
   .dark-mode & {
     background: linear-gradient(90deg, #3d2953, #2d1b3e);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    
-    &::after {
-      background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png'); /* Gengar */
-      opacity: 0.1;
-      filter: drop-shadow(0 0 20px rgba(224, 86, 253, 0.5));
-    }
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   }
 `;
 
+// Logo styling
 const Logo = styled(Link)`
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 800;
   color: white;
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
   position: relative;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  font-family: 'Montserrat', sans-serif;
-  letter-spacing: -0.03em;
-  transform-style: preserve-3d;
-  transition: transform 0.3s ease;
+  
+  @media (max-width: 768px) {
+    font-size: 1.7rem;
+    gap: 10px;
+  }
   
   &:hover {
     color: white;
-    transform: translateZ(10px);
+    transform: translateY(-2px);
+    
+    img {
+      transform: rotate(15deg) scale(1.1);
+    }
   }
   
   .text-accent {
     color: var(--secondary-color);
-    display: inline-block;
+    transition: color 0.3s ease;
     position: relative;
-    transition: all 0.3s ease;
+    display: inline-block;
     
     &::after {
       content: '';
       position: absolute;
-      width: 100%;
-      height: 100%;
+      bottom: -2px;
       left: 0;
-      top: 0;
-      background-color: var(--secondary-color);
-      opacity: 0.3;
-      filter: blur(8px);
-      z-index: -1;
-      transition: all 0.3s ease;
-      transform: translateZ(-5px);
+      width: 100%;
+      height: 2px;
+      background: var(--secondary-color);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
-  }
-  
-  &:hover .text-accent {
-    color: var(--accent-color);
-    transform: translateZ(15px);
   }
   
   &:hover .text-accent::after {
-    background-color: var(--accent-color);
-    opacity: 0.4;
-    filter: blur(10px);
-  }
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
-    transform: scaleX(0.7);
-    opacity: 0.5;
-    transition: all 0.3s ease;
-  }
-  
-  &:hover::after {
     transform: scaleX(1);
-    opacity: 0.8;
+    transform-origin: left;
   }
-
+  
   img {
     height: 45px;
     width: auto;
-    transition: all 0.5s ease;
-    transform-style: preserve-3d;
-    perspective: 1000px;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-    transform-origin: center;
-    animation: rotateBall 15s linear infinite;
-  }
-
-  &:hover img {
-    animation: rotateBall 4s linear infinite;
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
-    transform: scale(1.1) translateZ(20px);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    animation: floatBall 3s ease-in-out infinite;
+    transition: transform 0.3s ease;
+    
+    @media (max-width: 768px) {
+      height: 35px;
+    }
   }
   
-  @keyframes rotateBall {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  .dark-mode & {
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-    
-    .text-accent {
-      color: var(--accent-color);
-      
-      &::after {
-        background-color: var(--accent-color);
-      }
-    }
-    
-    &:hover .text-accent {
-      color: var(--secondary-color);
-    }
-    
-    &:hover .text-accent::after {
-      background-color: var(--secondary-color);
-    }
-    
-    img {
-      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-    }
+  @keyframes floatBall {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-5px) rotate(10deg); }
   }
 `;
 
-const NavItems = styled.div<{ isOpen: boolean }>`
+// Desktop navigation container
+const DesktopNav = styled.div`
   display: flex;
   align-items: center;
-  gap: 1.2rem;
-  transform-style: preserve-3d;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    position: absolute;
-    top: 70px;
-    right: ${({ isOpen }) => (isOpen ? '0' : '-100%')};
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    width: 280px;
-    height: 100vh;
-    padding: 2rem 1rem;
-    transition: right 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    z-index: 100;
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
-    transform-style: preserve-3d;
-    
-    .dark-mode & {
-      background: rgba(28, 40, 59, 0.95);
-      box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
-    }
-  }
-`;
-
-const SearchForm = styled.form`
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 30px;
-  padding: 8px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  transition: all var(--transition-speed);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), inset 0 0 10px rgba(255, 255, 255, 0.1);
-  transform-style: preserve-3d;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 60%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: all 0.6s ease;
-    transform: skewX(-25deg);
-  }
-
-  &:hover::before {
-    left: 150%;
-  }
-
-  &:focus-within {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15), inset 0 0 10px rgba(255, 255, 255, 0.2);
-    transform: translateY(-3px) translateZ(10px);
-  }
-
-  .dark-mode & {
-    background: rgba(0, 0, 0, 0.2);
-    border-color: rgba(79, 193, 166, 0.3);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    
-    &:focus-within {
-      background: rgba(0, 0, 0, 0.3);
-      border-color: rgba(79, 193, 166, 0.5);
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25), 0 0 15px rgba(79, 193, 166, 0.2);
-    }
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(79, 193, 166, 0.3);
-    
-    .dark-mode & {
-      background: rgba(0, 0, 0, 0.2);
-      border-color: rgba(79, 193, 166, 0.2);
-    }
-  }
-`;
-
-const PokeballIcon = styled.div`
-  position: relative;
-  width: 24px;
-  height: 24px;
-  margin-right: 8px;
-  transform-style: preserve-3d;
-  transform: translateZ(5px);
-  transition: all 0.3s ease;
-  
-  ${SearchForm}:focus-within & {
-    transform: translateZ(15px) rotate(360deg);
-  }
-
-  &::before, &::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-  }
-
-  &::before {
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 12px;
-    background-color: var(--accent-color);
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0 10px rgba(255, 93, 62, 0.4);
-  }
-
-  &::after {
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 12px;
-    background-color: white;
-    border: 2px solid var(--accent-color);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-  }
-
-  ${SearchForm}:focus-within &::before {
-    transform: translateY(2px);
-    box-shadow: 0 0 15px rgba(255, 93, 62, 0.6);
-  }
-
-  ${SearchForm}:focus-within &::after {
-    transform: translateY(-2px);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-  }
-  
-  .dark-mode &::before {
-    background-color: var(--secondary-color);
-    box-shadow: 0 0 10px rgba(247, 208, 44, 0.4);
-  }
-  
-  .dark-mode &::after {
-    border-color: var(--secondary-color);
-  }
-`;
-
-const SearchDot = styled.div`
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background-color: white;
-  border: 2px solid var(--accent-color);
-  border-radius: 50%;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-  transition: all 0.3s ease;
-  
-  .dark-mode & {
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 10px rgba(247, 208, 44, 0.4);
-  }
-  
-  ${SearchForm}:focus-within & {
-    background-color: var(--accent-color);
-    transform: translate(-50%, -50%) scale(1.2);
-    box-shadow: 0 0 15px rgba(255, 93, 62, 0.6);
-  }
-  
-  .dark-mode ${SearchForm}:focus-within & {
-    background-color: var(--secondary-color);
-    box-shadow: 0 0 15px rgba(247, 208, 44, 0.6);
-  }
-`;
-
-const SearchInput = styled.input`
-  background: transparent;
-  border: none;
-  color: white;
-  padding: 8px;
-  width: 200px;
-  font-weight: 500;
-  
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-    transition: color 0.3s ease;
-  }
-  
-  &:focus {
-    outline: none;
-  }
-
-  &:focus::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  .dark-mode & {
-    color: var(--text-dark);
-    
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.6);
-    }
-    
-    &:focus::placeholder {
-      color: rgba(255, 255, 255, 0.4);
-    }
-  }
   
   @media (max-width: 768px) {
-    width: 100%;
-    color: var(--text-light);
-    
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.6);
-    }
-    
-    .dark-mode & {
-      color: var(--text-dark);
-      
-      &::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-      }
-    }
+    display: none;
   }
 `;
 
-const ThemeToggle = styled.button`
-  background: transparent;
+// Theme toggle button for desktop
+const ThemeToggleDesktop = styled.button`
+  background: rgba(255, 255, 255, 0.15);
   color: white;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 30px;
-  padding: 8px 16px;
+  padding: 10px 18px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  position: relative;
-  overflow: hidden;
+  gap: 10px;
+  cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transform-style: preserve-3d;
+  backdrop-filter: blur(5px);
+  font-weight: 600;
+  letter-spacing: 0.5px;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-3px) translateZ(5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
   }
   
   .icon {
-    font-size: 1.2rem;
-    transition: all 0.5s ease;
-    transform-style: preserve-3d;
-    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
+    font-size: 1.3rem;
+    transition: transform 0.4s ease;
   }
   
   &:hover .icon {
-    transform: rotate(360deg) translateZ(10px);
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+    transform: rotate(30deg) scale(1.2);
   }
-
+  
   .dark-mode & {
     border-color: rgba(79, 193, 166, 0.4);
-    color: white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    
+    &:hover {
+      border-color: rgba(79, 193, 166, 0.7);
+    }
   }
-  
-  .dark-mode &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(79, 193, 166, 0.6);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-  }
+`;
+
+// Mobile navigation container
+const MobileNav = styled.div<{ isOpen: boolean }>`
+  display: none;
   
   @media (max-width: 768px) {
-    color: var(--text-light);
-    border-color: rgba(79, 193, 166, 0.4);
-    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 75%;
+    max-width: 280px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2);
+    padding: 40px 20px;
+    z-index: 999;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: ${({ isOpen }) => isOpen ? 'translateX(0)' : 'translateX(100%)'};
     
     .dark-mode & {
-      color: white;
+      background: rgba(26, 26, 46, 0.97);
+      box-shadow: -5px 0 30px rgba(0, 0, 0, 0.4);
     }
   }
 `;
 
-const MenuButton = styled.button`
+// Overlay for mobile menu
+const MobileOverlay = styled.div<{ isOpen: boolean }>`
   display: none;
-  background: transparent;
-  color: white;
-  font-size: 1.8rem;
-  padding: 5px;
-  border: none;
+  
+  @media (max-width: 768px) {
+    display: ${({ isOpen }) => isOpen ? 'block' : 'none'};
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 998;
+    transition: opacity 0.3s ease;
+    opacity: ${({ isOpen }) => isOpen ? '1' : '0'};
+  }
+`;
+
+// Mobile Pokemon logo
+const MobilePokemonLogo = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
+  
+  img {
+    width: 80px;
+    height: auto;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
+  
+  .title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #333;
+    
+    .dark-mode & {
+      color: #fff;
+    }
+    
+    .accent {
+      color: var(--primary-color);
+      
+      .dark-mode & {
+        color: var(--secondary-color);
+      }
+    }
+  }
+`;
+
+// Navigation links container
+const NavLinks = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 15px;
+`;
+
+// Navigation link
+const NavLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  width: 100%;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  text-decoration: none;
+  border-radius: 10px;
   transition: all 0.3s ease;
   
-  &:hover {
-    background-color: transparent;
-    transform: rotate(90deg);
-    color: var(--accent-color);
+  .dark-mode & {
+    color: #fff;
   }
-
-  @media (max-width: 768px) {
-    display: block;
+  
+  &:hover {
+    background: rgba(var(--primary-color-rgb), 0.1);
+    transform: translateX(5px);
+    
+    .dark-mode & {
+      background: rgba(var(--secondary-color-rgb), 0.1);
+    }
+  }
+  
+  .icon {
+    margin-right: 12px;
+    font-size: 1.3rem;
+    opacity: 0.8;
   }
 `;
 
+// Mobile theme toggle in sidebar
+const MobileThemeToggleSidebar = styled.button`
+  background: #f5f5f5;
+  color: #333;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 30px;
+  font-weight: 500;
+  
+  .dark-mode & {
+    background: #2a2a40;
+    color: white;
+  }
+  
+  &:hover {
+    background: #ebebeb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    
+    .dark-mode & {
+      background: #32324d;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+  
+  .icon {
+    font-size: 1.4rem;
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover .icon {
+    transform: rotate(15deg);
+  }
+`;
+
+// Mobile theme toggle button that appears in the navbar
+const MobileThemeToggle = styled.button`
+  display: none;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: white;
+  font-size: 1.3rem;
+  cursor: pointer;
+  width: 38px;
+  height: 38px;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  &:hover {
+    transform: scale(1.1) rotate(5deg);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .dark-mode & {
+    border-color: rgba(79, 193, 166, 0.4);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    
+    &:hover {
+      border-color: rgba(79, 193, 166, 0.7);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+  }
+`;
+
+// Mobile menu button
+const MenuToggle = styled.button`
+  display: none;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .dark-mode & {
+    border-color: rgba(79, 193, 166, 0.4);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    
+    &:hover {
+      border-color: rgba(79, 193, 166, 0.7);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+  }
+  
+  .bar {
+    display: block;
+    width: 18px;
+    height: 2px;
+    margin: 2px 0;
+    background-color: white;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+  }
+  
+  &.open {
+    background: rgba(255, 255, 255, 0.25);
+  }
+  
+  &.open .bar:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+  
+  &.open .bar:nth-child(2) {
+    opacity: 0;
+  }
+  
+  &.open .bar:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+`;
+
+// Navbar component
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const { darkMode, toggleTheme } = useTheme();
-  const navigate = useNavigate();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/?search=${encodeURIComponent(searchTerm.trim())}`);
-      setIsMenuOpen(false);
-    }
-  };
-
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  
+  // Toggle mobile menu
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-
+  
+  // Toggle theme
+  const handleThemeToggle = () => {
+    toggleTheme();
+  };
+  
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isMenuOpen && !(event.target as Element).closest('.nav-items')) {
+      if (
+        isMenuOpen && 
+        menuRef.current && 
+        buttonRef.current && 
+        !menuRef.current.contains(event.target as Node) && 
+        !buttonRef.current.contains(event.target as Node)
+      ) {
         setIsMenuOpen(false);
       }
     };
-
+    
     document.addEventListener('mousedown', handleClickOutside);
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isMenuOpen]);
+  
+  // Prevent scrolling when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
 
   return (
-    <NavbarContainer>
-      <Logo to="/">
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="PokéTrainer" />
-        <span>Poké<span className="text-accent">Dex</span></span>
-      </Logo>
-      
-      <MenuButton onClick={toggleMenu}>
-        {isMenuOpen ? '✕' : '☰'}
-      </MenuButton>
-      
-      <NavItems isOpen={isMenuOpen} className="nav-items">
-        <SearchForm onSubmit={handleSearch}>
-          <PokeballIcon>
-            <SearchDot />
-          </PokeballIcon>
-          <SearchInput
-            type="text"
-            placeholder="Search Pokémon..."
-            value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-          />
-        </SearchForm>
+    <>
+      <NavbarContainer>
+        <Logo to="/">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="PokéBall" />
+          <span>Poké<span className="text-accent">Dex</span></span>
+        </Logo>
         
-        <ThemeToggle onClick={toggleTheme}>
+        {/* Desktop Navigation */}
+        <DesktopNav>
+          <ThemeToggleDesktop onClick={handleThemeToggle}>
+            <span className="icon">{darkMode ? '☀️' : '🌙'}</span>
+            <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+          </ThemeToggleDesktop>
+        </DesktopNav>
+        
+        {/* Mobile Navigation Controls */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {/* Mobile theme toggle */}
+          <MobileThemeToggle onClick={handleThemeToggle} aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}>
+            {darkMode ? '☀️' : '🌙'}
+          </MobileThemeToggle>
+          
+          {/* Mobile Menu Button */}
+          <MenuToggle 
+            ref={buttonRef}
+            onClick={toggleMenu} 
+            className={isMenuOpen ? 'open' : ''}
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            <span className="bar"></span>
+            <span className="bar"></span>
+            <span className="bar"></span>
+          </MenuToggle>
+        </div>
+      </NavbarContainer>
+      
+      {/* Mobile Navigation */}
+      <MobileOverlay isOpen={isMenuOpen} onClick={() => setIsMenuOpen(false)} />
+      <MobileNav ref={menuRef} isOpen={isMenuOpen}>
+        <MobilePokemonLogo>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu" />
+          <div className="title">Poké<span className="accent">Dex</span></div>
+        </MobilePokemonLogo>
+        
+        <NavLinks>
+          <NavLink to="/favorites">
+            <span className="icon">⭐</span>
+            Favorites
+          </NavLink>
+          <NavLink to="/types">
+            <span className="icon">🔠</span>
+            Types
+          </NavLink>
+          <NavLink to="/about">
+            <span className="icon">ℹ️</span>
+            About
+          </NavLink>
+        </NavLinks>
+        
+        <MobileThemeToggleSidebar onClick={handleThemeToggle}>
           <span className="icon">{darkMode ? '☀️' : '🌙'}</span>
-          {darkMode ? 'Light Mode' : 'Dark Mode'}
-        </ThemeToggle>
-      </NavItems>
-    </NavbarContainer>
+          <span>{darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+        </MobileThemeToggleSidebar>
+      </MobileNav>
+    </>
   );
 };
 

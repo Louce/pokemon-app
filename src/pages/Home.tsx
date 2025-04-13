@@ -157,30 +157,23 @@ const Subtitle = styled.p`
 `;
 
 const FiltersContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 30px 0;
-  justify-content: center;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  position: relative;
-  z-index: 2;
+  margin-bottom: 30px;
   
-  .dark-mode & {
-    background: rgba(30, 30, 30, 0.4);
+  @media (max-width: 480px) {
+    margin-bottom: 20px;
   }
 `;
 
 const TypeButtonsRow = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  width: 100%;
+  gap: 10px;
+  margin-bottom: 15px;
+  
+  @media (max-width: 480px) {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
 `;
 
 const TypesTitle = styled.h3`
@@ -237,6 +230,16 @@ const TypeButton = styled.button<{ active: boolean; type: string }>`
   @media (max-width: 768px) {
     padding: 8px 12px;
     font-size: 0.8rem;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    border-radius: 12px;
   }
 `;
 
@@ -246,6 +249,10 @@ const SearchForm = styled.form`
   max-width: 600px;
   margin: 0 auto 20px;
   position: relative;
+  
+  @media (max-width: 480px) {
+    max-width: 100%;
+  }
 `;
 
 const SearchInput = styled.input`
@@ -272,6 +279,11 @@ const SearchInput = styled.input`
       box-shadow: 0 5px 20px rgba(30, 30, 35, 0.3);
       background-color: rgba(45, 45, 50, 0.95);
     }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 12px 16px 12px 40px;
+    font-size: 1rem;
   }
 `;
 
@@ -383,10 +395,14 @@ const ClearButton = styled.button`
 // ViewMode toggle controls
 const ViewModeContainer = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   margin: 20px 0;
   gap: 10px;
+  
+  @media (max-width: 480px) {
+    margin: 15px 0;
+  }
 `;
 
 const ViewModeLabel = styled.span`
@@ -396,6 +412,11 @@ const ViewModeLabel = styled.span`
   
   .dark-mode & {
     color: var(--text-dark);
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+    display: none;
   }
 `;
 
@@ -498,15 +519,19 @@ const PokemonGrid = styled(motion.div)<{ viewMode: string }>`
   @media (max-width: 768px) {
     grid-template-columns: ${props => props.viewMode === 'grid' 
       ? 'repeat(auto-fill, minmax(160px, 1fr))' 
-      : 'repeat(auto-fill, minmax(240px, 1fr))'};
+      : '1fr'};
     gap: ${props => props.viewMode === 'grid' ? '20px' : '25px'};
+    margin-top: 20px;
+    padding: 5px;
   }
   
   @media (max-width: 480px) {
     grid-template-columns: ${props => props.viewMode === 'grid' 
       ? 'repeat(auto-fill, minmax(140px, 1fr))' 
-      : 'repeat(auto-fill, minmax(220px, 1fr))'};
+      : '1fr'};
     gap: ${props => props.viewMode === 'grid' ? '15px' : '20px'};
+    margin-top: 15px;
+    padding: 0;
   }
 `;
 

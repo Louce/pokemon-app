@@ -52,7 +52,7 @@ const Card = styled(Link)<{
     : '0 10px 25px rgba(0, 0, 0, 0.12)'};
   padding: ${props => props.viewMode === 'grid' ? '25px 20px' : '30px'};
   display: flex;
-  flex-direction: column;
+  flex-direction: ${props => props.viewMode === 'grid' ? 'column' : 'column'};
   align-items: center;
   text-decoration: none;
   color: ${props => props.isDarkMode ? 'rgba(235, 235, 240, 0.9)' : props.textColor};
@@ -72,7 +72,14 @@ const Card = styled(Link)<{
   border-radius: 24px;
   
   @media (max-width: 768px) {
-    padding: ${props => props.viewMode === 'list' ? '25px' : '15px 15px'};
+    padding: ${props => props.viewMode === 'list' ? '20px' : '15px 15px'};
+    flex-direction: ${props => props.viewMode === 'list' ? 'row' : 'column'};
+    align-items: ${props => props.viewMode === 'list' ? 'flex-start' : 'center'};
+  }
+  
+  @media (max-width: 480px) {
+    padding: ${props => props.viewMode === 'list' ? '15px' : '10px'};
+    border-radius: 16px;
   }
   
   &:hover {
@@ -80,6 +87,10 @@ const Card = styled(Link)<{
     box-shadow: ${props => props.isDarkMode 
       ? '0 20px 40px rgba(0, 0, 0, 0.35)' 
       : `0 20px 35px ${props.isLight ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.3)'}`};
+      
+    @media (max-width: 768px) {
+      transform: translateY(-5px) scale(1.01);
+    }
   }
 
   &::before {
@@ -126,14 +137,22 @@ const PokemonImage = styled.div<{ viewMode?: 'list' | 'grid'; isDarkMode: boolea
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: ${props => props.viewMode === 'grid' ? '20px' : '20px'};
   position: relative;
   z-index: 1;
   transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   
   @media (max-width: 768px) {
-    width: ${props => props.viewMode === 'grid' ? '130px' : '160px'};
-    height: ${props => props.viewMode === 'grid' ? '130px' : '160px'};
+    width: ${props => props.viewMode === 'grid' ? '130px' : '120px'};
+    height: ${props => props.viewMode === 'grid' ? '130px' : '120px'};
+    margin-bottom: ${props => props.viewMode === 'list' ? '0' : '15px'};
+    margin-right: ${props => props.viewMode === 'list' ? '15px' : '0'};
+  }
+  
+  @media (max-width: 480px) {
+    width: ${props => props.viewMode === 'grid' ? '100px' : '90px'};
+    height: ${props => props.viewMode === 'grid' ? '100px' : '90px'};
+    margin-right: ${props => props.viewMode === 'list' ? '10px' : '0'};
   }
 
   &::before {
@@ -225,9 +244,13 @@ const InfoContainer = styled.div<{ viewMode?: 'list' | 'grid' }>`
   flex: 1;
   display: flex;
   flex-direction: column;
-  text-align: center;
+  text-align: ${props => props.viewMode === 'grid' ? 'center' : 'center'};
   z-index: 1;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    text-align: ${props => props.viewMode === 'list' ? 'left' : 'center'};
+  }
 `;
 
 const PokemonName = styled.h3<{ viewMode?: 'list' | 'grid'; isDarkMode: boolean }>`
@@ -241,12 +264,13 @@ const PokemonName = styled.h3<{ viewMode?: 'list' | 'grid'; isDarkMode: boolean 
   opacity: ${props => props.isDarkMode ? '0.9' : '1'};
   
   @media (max-width: 768px) {
-    font-size: ${props => props.viewMode === 'grid' ? '1.2rem' : '1.5rem'};
-    margin-bottom: ${props => props.viewMode === 'grid' ? '10px' : '12px'};
+    font-size: ${props => props.viewMode === 'grid' ? '1.2rem' : '1.3rem'};
+    margin-bottom: ${props => props.viewMode === 'grid' ? '10px' : '8px'};
   }
   
   @media (max-width: 480px) {
-    font-size: ${props => props.viewMode === 'grid' ? '1.1rem' : '1.4rem'};
+    font-size: ${props => props.viewMode === 'grid' ? '1.1rem' : '1.2rem'};
+    margin-bottom: ${props => props.viewMode === 'grid' ? '8px' : '5px'};
   }
 `;
 
@@ -255,7 +279,18 @@ const PokemonTypes = styled.div<{ viewMode?: 'list' | 'grid' }>`
   flex-wrap: wrap;
   gap: 10px;
   margin-top: ${props => props.viewMode === 'grid' ? '8px' : '12px'};
-  justify-content: center;
+  justify-content: ${props => props.viewMode === 'grid' ? 'center' : 'center'};
+  
+  @media (max-width: 768px) {
+    gap: 8px;
+    margin-top: ${props => props.viewMode === 'grid' ? '5px' : '5px'};
+    justify-content: ${props => props.viewMode === 'list' ? 'flex-start' : 'center'};
+  }
+  
+  @media (max-width: 480px) {
+    gap: 5px;
+    margin-top: 3px;
+  }
 `;
 
 const PokemonType = styled.span<{ 
@@ -289,8 +324,14 @@ const PokemonType = styled.span<{
   };
   
   @media (max-width: 768px) {
-    padding: ${props => props.viewMode === 'grid' ? '5px 10px' : '7px 14px'};
-    font-size: ${props => props.viewMode === 'grid' ? '0.75rem' : '0.85rem'};
+    padding: ${props => props.viewMode === 'grid' ? '5px 10px' : '6px 12px'};
+    font-size: ${props => props.viewMode === 'grid' ? '0.75rem' : '0.8rem'};
+  }
+  
+  @media (max-width: 480px) {
+    padding: ${props => props.viewMode === 'grid' ? '4px 8px' : '4px 10px'};
+    font-size: ${props => props.viewMode === 'grid' ? '0.7rem' : '0.75rem'};
+    border-radius: 20px;
   }
   
   ${Card}:hover & {
@@ -314,6 +355,19 @@ const StatContainer = styled.div<{ viewMode?: 'list' | 'grid' }>`
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
+  position: relative;
+  z-index: 5;
+  
+  @media (max-width: 768px) {
+    gap: 10px;
+    margin-top: 12px;
+    justify-content: flex-start;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 8px;
+    margin-top: 10px;
+  }
 `;
 
 const StatItem = styled.div<{ 
@@ -327,12 +381,41 @@ const StatItem = styled.div<{
   background: ${props => props.isDarkMode
     ? 'rgba(35, 35, 40, 0.6)'
     : props.isLight 
-      ? 'rgba(0, 0, 0, 0.08)' 
-      : 'rgba(255, 255, 255, 0.2)'
+      ? 'rgba(0, 0, 0, 0.1)' 
+      : 'rgba(255, 255, 255, 0.25)'
   };
   padding: 8px 16px;
   border-radius: 16px;
   backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+  border: 1px solid ${props => props.isDarkMode
+    ? 'rgba(50, 50, 55, 0.5)'
+    : props.isLight 
+      ? 'rgba(0, 0, 0, 0.05)' 
+      : 'rgba(255, 255, 255, 0.2)'
+  };
+  z-index: 5;
+  
+  ${Card}:hover & {
+    transform: translateY(-2px);
+    background: ${props => props.isDarkMode
+      ? 'rgba(40, 40, 45, 0.7)'
+      : props.isLight 
+        ? 'rgba(0, 0, 0, 0.15)' 
+        : 'rgba(255, 255, 255, 0.3)'
+    };
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    border-radius: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 4px 10px;
+    border-radius: 10px;
+  }
 `;
 
 const StatLabel = styled.span<{ isDarkMode: boolean }>`
@@ -342,6 +425,11 @@ const StatLabel = styled.span<{ isDarkMode: boolean }>`
   margin-bottom: 5px;
   font-weight: 500;
   text-transform: capitalize;
+  
+  @media (max-width: 480px) {
+    font-size: 0.7rem;
+    margin-bottom: 3px;
+  }
 `;
 
 const StatValue = styled.span<{ isDarkMode: boolean }>`
@@ -350,6 +438,10 @@ const StatValue = styled.span<{ isDarkMode: boolean }>`
   color: inherit;
   position: relative;
   opacity: ${props => props.isDarkMode ? '0.9' : '1'};
+  
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
 `;
 
 const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, viewMode = 'list' }) => {

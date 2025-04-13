@@ -401,11 +401,11 @@ const PokedexGraphic = styled.div`
 `;
 
 const Footer: React.FC = () => {
-  const { darkMode } = useTheme();
+  const { /* darkMode */ } = useTheme();
   
   return (
     <FooterContainer>
-      <PokedexGraphic className={darkMode ? 'dark-mode' : ''} />
+      <PokedexGraphic />
       <FooterContent>
         <FooterLogo>
           <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="PokéDex" />

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+
 import { useLocation, useNavigate } from 'react-router-dom';
 
 // Define filter options
@@ -17,7 +18,7 @@ export interface FilterOptions {
 // Define the context type
 interface FilterContextType {
   filters: FilterOptions;
-  setFilter: (key: keyof FilterOptions, value: any) => void;
+  setFilter: <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => void;
   clearFilters: () => void;
   toggleAdvancedFilters: () => void;
   activeFilterCount: number;
@@ -75,7 +76,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [location.search]);
 
   // Set a single filter and update URL
-  const setFilter = (key: keyof FilterOptions, value: any) => {
+  const setFilter = <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => {
     // Special case for showAdvancedFilters which doesn't affect URL
     if (key === 'showAdvancedFilters') {
       setFilters(prev => ({ ...prev, [key]: value }));

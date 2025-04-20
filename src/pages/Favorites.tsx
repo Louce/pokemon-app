@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import styled from 'styled-components';
+
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState } from '../redux/store';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+import Loading from '../components/Loading';
+import PokemonCard from '../components/PokemonCard';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useUser } from '../contexts/UserContext';
-import { getPokemonDetail } from '../services/pokemonService';
-import PokemonCard from '../components/PokemonCard';
-import Loading from '../components/Loading';
+import { RootState } from '../redux/store';
+import { getPokemonDetail, PokemonDetail } from '../services/pokemonService';
 
 // Styled components
 const FavoritesContainer = styled.div`
@@ -249,7 +251,7 @@ const Favorites: React.FC = () => {
   // Use useMemo to prevent unnecessary recalculations
   const pokemonDetails = useMemo(() => pokemonState?.pokemonDetails || {}, [pokemonState?.pokemonDetails]);
   
-  const [favoritesList, setFavoritesList] = useState<{ [key: string]: any }>({});
+  const [favoritesList, setFavoritesList] = useState<{ [key: string]: PokemonDetail }>({});
   
   useEffect(() => {
     // Redirect if not logged in
@@ -263,7 +265,7 @@ const Favorites: React.FC = () => {
       setLoading(true);
       
       try {
-        const allFavorites: { [key: string]: any } = {};
+        const allFavorites: { [key: string]: PokemonDetail } = {};
         
         // First check if we already have the pokemon in Redux or context
         for (const id of favorites) {
@@ -316,7 +318,7 @@ const Favorites: React.FC = () => {
       <Header>
         <Title>Your Favorites</Title>
         <Subtitle>
-          Your personally curated collection of Pokémon you've favorited.
+          Your personally curated collection of Pokémon you&apos;ve favorited.
         </Subtitle>
       </Header>
       
@@ -352,7 +354,7 @@ const Favorites: React.FC = () => {
           />
           <EmptyStateTitle>No Favorites Yet</EmptyStateTitle>
           <EmptyStateText>
-            You haven't added any Pokémon to your favorites yet. 
+            You haven&apos;t added any Pokémon to your favorites yet. 
             Browse the Pokédex and click the heart icon to start building your collection!
           </EmptyStateText>
           <ExploreButton

@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
 import { PokemonDetail } from '../../services/pokemonService';
 
 // Define the state type

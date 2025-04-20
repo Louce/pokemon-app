@@ -93,7 +93,7 @@ export const typeCardBackgrounds: { [key: string]: string } = {
   shadow: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(0, 0, 0, 0) 100%), linear-gradient(150deg, #63526E 0%, #3B2C46 100%)',
 };
 
-export const getBackgroundColorByType = (type: string, useGradient: boolean = false): string => {
+export const getBackgroundColorByType = (type: string, useGradient = false): string => {
   if (useGradient) {
     // Return just the gradient without the overlay for cleaner look
     return typeBackgroundColors[type] || typeBackgroundColors.unknown;

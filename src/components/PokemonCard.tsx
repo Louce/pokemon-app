@@ -1,12 +1,14 @@
 import React from 'react';
+
+import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { PokemonDetail } from '../services/pokemonService';
-import { useTheme } from '../contexts/ThemeContext';
-import { typeColors, getBackgroundColorByType } from '../utils/typeColors';
+
 import FavoriteButton from './FavoriteButton';
-import { useDispatch } from 'react-redux';
+import { useTheme } from '../contexts/ThemeContext';
 import { addToRecentlyViewed } from '../redux/slices/pokemonSlice';
+import { PokemonDetail } from '../services/pokemonService';
+import { typeColors, getBackgroundColorByType } from '../utils/typeColors';
 
 interface PokemonCardProps {
   pokemon: PokemonDetail;

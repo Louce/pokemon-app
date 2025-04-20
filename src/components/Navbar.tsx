@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+
+import LoginModal from './LoginModal';
+import { useFavorites } from '../contexts/FavoritesContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import { useFavorites } from '../contexts/FavoritesContext';
-import LoginModal from './LoginModal';
 
 // Main navbar container
 const NavbarContainer = styled.nav`

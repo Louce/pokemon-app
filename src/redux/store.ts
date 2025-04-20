@@ -3,8 +3,8 @@ import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, 
 import storage from 'redux-persist/lib/storage';
 
 // Import reducers
-import pokemonReducer from './slices/pokemonSlice';
 import favoritesReducer from './slices/favoritesSlice';
+import pokemonReducer from './slices/pokemonSlice';
 import userPreferencesReducer from './slices/userPreferencesSlice';
 
 const persistConfig = {

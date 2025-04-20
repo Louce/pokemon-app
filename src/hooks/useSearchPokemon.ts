@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+
 import { searchPokemon, PokemonDetail } from '../services/pokemonService';
 
 interface UseSearchPokemonResult {

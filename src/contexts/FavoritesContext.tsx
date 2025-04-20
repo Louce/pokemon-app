@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
+
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../redux/store';
+
 import { toggleFavorite, addFavoriteDetail } from '../redux/slices/favoritesSlice';
+import { RootState } from '../redux/store';
 import { PokemonDetail } from '../services/pokemonService';
 import { storageService, STORAGE_KEYS } from '../utils/storageService';
 

@@ -1,20 +1,22 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+
 import { AnimatePresence, motion } from 'framer-motion';
 import { Provider } from 'react-redux';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react';
-import { store, persistor } from './redux/store';
+
 import './App.css';
+import Footer from './components/Footer';
+import Loading from './components/Loading';
+import Navbar from './components/Navbar';
+import { FavoritesProvider } from './contexts/FavoritesContext';
+import { FilterProvider } from './contexts/FilterContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { UserProvider } from './contexts/UserContext';
+import Favorites from './pages/Favorites';
 import Home from './pages/Home';
 import PokemonDetails from './pages/PokemonDetails';
-import Favorites from './pages/Favorites';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { FavoritesProvider } from './contexts/FavoritesContext';
-import { UserProvider } from './contexts/UserContext';
-import { FilterProvider } from './contexts/FilterContext';
-import Loading from './components/Loading';
+import { store, persistor } from './redux/store';
 
 /**
  * AnimatedRoutes component handles page transitions using Framer Motion

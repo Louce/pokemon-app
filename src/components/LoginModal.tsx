@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+
 import { motion, AnimatePresence } from 'framer-motion';
+import styled from 'styled-components';
+
 import { useUser } from '../contexts/UserContext';
 
 // Styled components

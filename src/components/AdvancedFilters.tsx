@@ -1,6 +1,8 @@
 import React from 'react';
-import styled from 'styled-components';
+
 import { motion, AnimatePresence } from 'framer-motion';
+import styled from 'styled-components';
+
 import { useFilters, FilterOptions } from '../contexts/FilterContext';
 
 // Styled components
@@ -334,6 +336,7 @@ const AdvancedFilters: React.FC = () => {
   const { filters, setFilter, clearFilters, activeFilterCount } = useFilters();
   
   const handleFilterChange = (key: keyof FilterOptions, value: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // Convert empty strings to null for number fields
     if ((typeof value === 'string' && value === '') || value === null) {
       setFilter(key, null);

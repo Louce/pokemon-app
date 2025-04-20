@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
+
+import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { usePokemonDetail } from '../hooks/usePokemonDetail';
+
 import Loading from '../components/Loading';
+import { usePokemonDetail } from '../hooks/usePokemonDetail';
 
 // Pokemon type colors
 const typeColors = {
@@ -430,12 +432,14 @@ const EvolutionArrow = styled.div`
 
 // Helper functions moved outside component to avoid recreation on render
 const getEnglishDescription = (species: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!species || !species.flavor_text_entries || species.flavor_text_entries.length === 0) {
     return null;
   }
   
   const englishEntries = species.flavor_text_entries.filter(
     (entry: any) => entry.language.name === 'en'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   );
   
   if (englishEntries.length > 0) {
@@ -447,11 +451,13 @@ const getEnglishDescription = (species: any) => {
 };
 
 const getEnglishGenus = (species: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!species || !species.genera || species.genera.length === 0) {
     return null;
   }
   
   const englishGenus = species.genera.find((g: any) => g.language.name === 'en');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return englishGenus ? englishGenus.genus : null;
 };
 
@@ -463,6 +469,7 @@ const getIdFromUrl = (url: string): string => {
 
 // Helper function to render evolution details
 const renderEvolutionDetails = (details: any): React.ReactNode => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!details) return null;
   
   let evolutionText = '';
@@ -482,6 +489,7 @@ const renderEvolutionDetails = (details: any): React.ReactNode => {
 
 // Evolution stage component for better reuse and maintainability
 const EvolutionStageItem = ({ species, details }: { species: any, details?: any }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!species) return null;
   
   const id = getIdFromUrl(species.url);

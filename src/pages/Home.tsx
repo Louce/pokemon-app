@@ -1,19 +1,21 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+
+import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
+
+import AdvancedFilters from '../components/AdvancedFilters';
+import Loading from '../components/Loading';
+import Pagination from '../components/Pagination';
+import PokemonCard from '../components/PokemonCard';
+import PokemonCardSkeleton from '../components/PokemonCardSkeleton';
+import { useFilters } from '../contexts/FilterContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 import { usePokemonList } from '../hooks/usePokemonList';
 import { useSearchPokemon } from '../hooks/useSearchPokemon';
 import { getPokemonDetail, getPokemonByType, PokemonDetail } from '../services/pokemonService';
-import PokemonCard from '../components/PokemonCard';
-import Pagination from '../components/Pagination';
-import { useTheme } from '../contexts/ThemeContext';
-import { useFilters } from '../contexts/FilterContext';
-import AdvancedFilters from '../components/AdvancedFilters';
 import { applyFilters, PokemonCache } from '../utils/filterUtils';
-import { useUser } from '../contexts/UserContext';
-import Loading from '../components/Loading';
-import PokemonCardSkeleton from '../components/PokemonCardSkeleton';
 
 const HomeContainer = styled.div`
   min-height: 100%;
@@ -38,7 +40,7 @@ const ParallaxBackground = styled.div`
     left: 0;
     right: 0;
     height: 300px;
-    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png');
+    background-image: url("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png");
     background-size: 150px;
     background-repeat: no-repeat;
     background-position: 90% -10px;
@@ -53,7 +55,7 @@ const ParallaxBackground = styled.div`
     left: 0;
     right: 0;
     height: 300px;
-    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png');
+    background-image: url("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png");
     background-size: 200px;
     background-repeat: no-repeat;
     background-position: 10% bottom;
@@ -180,7 +182,7 @@ const SearchIcon = styled.div`
   pointer-events: none;
   
   &::before {
-    content: '🔍';
+    content: "🔍";
     font-size: 1rem;
   }
 `;
@@ -209,7 +211,7 @@ const SearchButton = styled.button`
   }
   
   &::before {
-    content: '→';
+    content: "→";
     font-size: 1.2rem;
   }
   
@@ -1082,7 +1084,7 @@ const Home: React.FC = () => {
       return (
         <>
           <SearchHeader>
-            <SearchResultsTitle>Search Results for "{searchQuery}"</SearchResultsTitle>
+            <SearchResultsTitle>Search Results for {searchQuery}</SearchResultsTitle>
             <SearchResultsCount>
               Found <span>{searchResults.length}</span> Pokémon
             </SearchResultsCount>

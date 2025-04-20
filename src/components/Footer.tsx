@@ -1,5 +1,7 @@
 import React from 'react';
+
 import styled from 'styled-components';
+
 import { useTheme } from '../contexts/ThemeContext';
 
 const FooterContainer = styled.footer`

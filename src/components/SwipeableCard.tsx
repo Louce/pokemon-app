@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
+
 import { useTheme } from '../contexts/ThemeContext';
 
 interface SwipeableCardProps {
@@ -67,7 +69,7 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
   swipeThreshold = 100,
   className,
 }) => {
-  const [isDragging, setIsDragging] = useState(false);
+  const [, setIsDragging] = useState(false);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
   const { darkMode } = useTheme();
   

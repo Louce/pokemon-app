@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../redux/store';
+
 import { login, logout, addSearchQuery, ViewMode, setViewMode } from '../redux/slices/userPreferencesSlice';
+import { RootState } from '../redux/store';
 import { storageService, STORAGE_KEYS } from '../utils/storageService';
 
 // Define types
@@ -15,9 +17,9 @@ interface User {
 interface UserContextType {
   currentUser: User | null;
   isLoggedIn: boolean;
-  loginUser: (username: string, password: string) => Promise<boolean>;
+  loginUser: (username: string, _password: string) => Promise<boolean>;
   logoutUser: () => void;
-  registerUser: (username: string, email: string, password: string) => Promise<boolean>;
+  registerUser: (username: string, email: string, _password: string) => Promise<boolean>;
   viewMode: ViewMode;
   setUserViewMode: (mode: ViewMode) => void;
   searchHistory: string[];
@@ -56,7 +58,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [username]);
   
   // Mock login function - in a real app, this would call your API
-  const loginUser = async (username: string, password: string): Promise<boolean> => {
+  const loginUser = async (username: string, _password: string): Promise<boolean> => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -105,14 +107,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const registerUser = async (
     username: string,
     email: string,
-    password: string
+    _password: string
   ): Promise<boolean> => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 800));
       
       // Automatically log in after successful registration
-      return await loginUser(username, password);
+      return await loginUser(username, _password);
     } catch (error) {
       console.error('Registration error:', error);
       return false;

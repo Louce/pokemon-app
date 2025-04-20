@@ -1,5 +1,5 @@
-import { PokemonDetail } from '../services/pokemonService';
 import { FilterOptions } from '../contexts/FilterContext';
+import { PokemonDetail } from '../services/pokemonService';
 
 /**
  * Applies filters to an array of Pokemon
@@ -18,34 +18,39 @@ export const applyFilters = (pokemon: PokemonDetail[], filters: FilterOptions): 
   }
   
   // Apply weight filters (API returns weight in hectograms, convert to kg)
-  if (filters.minWeight !== null) {
+  if (filters.minWeight !== null && filters.minWeight !== undefined) {
+    const minWeight = filters.minWeight;
     filteredPokemon = filteredPokemon.filter(pokemon => 
-      pokemon.weight >= filters.minWeight! * 10
+      pokemon.weight >= minWeight * 10
     );
   }
-  if (filters.maxWeight !== null) {
+  if (filters.maxWeight !== null && filters.maxWeight !== undefined) {
+    const maxWeight = filters.maxWeight;
     filteredPokemon = filteredPokemon.filter(pokemon => 
-      pokemon.weight <= filters.maxWeight! * 10
+      pokemon.weight <= maxWeight * 10
     );
   }
   
   // Apply height filters (API returns height in decimetres, convert to m)
-  if (filters.minHeight !== null) {
+  if (filters.minHeight !== null && filters.minHeight !== undefined) {
+    const minHeight = filters.minHeight;
     filteredPokemon = filteredPokemon.filter(pokemon => 
-      pokemon.height >= filters.minHeight! * 10
+      pokemon.height >= minHeight * 10
     );
   }
-  if (filters.maxHeight !== null) {
+  if (filters.maxHeight !== null && filters.maxHeight !== undefined) {
+    const maxHeight = filters.maxHeight;
     filteredPokemon = filteredPokemon.filter(pokemon => 
-      pokemon.height <= filters.maxHeight! * 10
+      pokemon.height <= maxHeight * 10
     );
   }
   
   // Apply minimum base stats filter
-  if (filters.minBaseStats !== null) {
+  if (filters.minBaseStats !== null && filters.minBaseStats !== undefined) {
+    const minBaseStats = filters.minBaseStats;
     filteredPokemon = filteredPokemon.filter(pokemon => {
       const totalStats = pokemon.stats.reduce((sum, stat) => sum + stat.base_stat, 0);
-      return totalStats >= filters.minBaseStats!;
+      return totalStats >= minBaseStats;
     });
   }
   
@@ -63,7 +68,7 @@ export const applyFilters = (pokemon: PokemonDetail[], filters: FilterOptions): 
       8: [810, 898]
     };
     
-    const range = genRanges[filters.generation];
+    const range = genRanges[filters.generation as number];
     if (range) {
       filteredPokemon = filteredPokemon.filter(
         pokemon => pokemon.id >= range[0] && pokemon.id <= range[1]

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
@@ -7,8 +7,13 @@ import { useSearchPokemon } from '../hooks/useSearchPokemon';
 import { getPokemonDetail, getPokemonByType, PokemonDetail } from '../services/pokemonService';
 import PokemonCard from '../components/PokemonCard';
 import Pagination from '../components/Pagination';
-import Loading from '../components/Loading';
 import { useTheme } from '../contexts/ThemeContext';
+import { useFilters } from '../contexts/FilterContext';
+import AdvancedFilters from '../components/AdvancedFilters';
+import { applyFilters, PokemonCache } from '../utils/filterUtils';
+import { useUser } from '../contexts/UserContext';
+import Loading from '../components/Loading';
+import PokemonCardSkeleton from '../components/PokemonCardSkeleton';
 
 const HomeContainer = styled.div`
   min-height: 100%;
@@ -61,49 +66,6 @@ const ParallaxBackground = styled.div`
     opacity: 0.07;
     filter: brightness(0.8);
   }
-`;
-
-const ParallaxLayer1 = styled.div`
-  position: absolute;
-  top: 20%;
-  left: 5%;
-  width: 120px;
-  height: 120px;
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.05;
-  animation: parallaxMove 15s ease-in-out infinite alternate;
-  z-index: -1;
-`;
-
-const ParallaxLayer2 = styled.div`
-  position: absolute;
-  top: 60%;
-  right: 8%;
-  width: 100px;
-  height: 100px;
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.05;
-  animation: parallaxMove 20s ease-in-out infinite alternate-reverse;
-  z-index: -1;
-`;
-
-const ParallaxLayer3 = styled.div`
-  position: absolute;
-  bottom: 15%;
-  left: 15%;
-  width: 80px;
-  height: 80px;
-  background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.04;
-  animation: parallaxMove 12s ease-in-out infinite alternate;
-  animation-delay: 0.5s;
-  z-index: -1;
 `;
 
 const Header = styled.header`
@@ -160,85 +122,6 @@ const FiltersContainer = styled.div`
   
   @media (max-width: 480px) {
     margin-bottom: 20px;
-  }
-`;
-
-const TypeButtonsRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
-  
-  @media (max-width: 480px) {
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-`;
-
-const TypesTitle = styled.h3`
-  width: 100%;
-  text-align: center;
-  margin-bottom: 15px;
-  font-size: 1.2rem;
-  color: var(--text-light);
-  
-  .dark-mode & {
-    color: var(--text-dark);
-  }
-`;
-
-const TypeButton = styled.button<{ active: boolean; type: string }>`
-  padding: 10px 15px;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  background-color: ${({ active, type }) =>
-    active ? `var(--type-${type})` : 'var(--card-bg-light)'};
-  color: ${({ active }) => 
-    active ? '#fff' : 'var(--text-light)'};
-  border: 2px solid ${({ active, type }) =>
-    active ? `var(--type-${type})` : 'transparent'};
-  
-  .dark-mode & {
-    background-color: ${({ active, type }) =>
-      active ? `var(--type-${type})` : 'var(--card-bg-dark)'};
-    color: ${({ active }) => 
-      active ? '#fff' : 'var(--text-dark)'};
-    border: 2px solid ${({ active, type }) =>
-      active ? `var(--type-${type})` : 'transparent'};
-  }
-  
-  &:hover {
-    transform: translateY(-2px);
-    color: ${({ active }) => (active ? '#fff' : 'var(--primary-color)')};
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    
-    .dark-mode & {
-      color: ${({ active }) => (active ? '#fff' : 'rgba(235, 235, 240, 0.9)')};
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-  }
-
-  @media (max-width: 768px) {
-    padding: 8px 12px;
-    font-size: 0.8rem;
-    margin-right: 6px;
-    margin-bottom: 6px;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 6px 10px;
-    font-size: 0.75rem;
-    margin-right: 4px;
-    margin-bottom: 4px;
-    border-radius: 12px;
   }
 `;
 
@@ -341,52 +224,38 @@ const SearchButton = styled.button`
 `;
 
 const ClearButton = styled.button`
-  background-color: transparent;
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-  padding: 8px 20px;
+  background-color: #f44336;
+  border: none;
+  color: white;
+  padding: 10px 24px;
   border-radius: 30px;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 10px;
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-  
-  &:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--primary-color);
-    opacity: 0;
-    z-index: -1;
-    transition: opacity 0.3s ease;
-  }
+  margin-top: 15px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.25);
   
   &:hover {
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background-color: #d32f2f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(244, 67, 54, 0.35);
   }
   
-  &:hover:after {
-    opacity: 1;
+  &:active {
+    transform: translateY(0);
   }
   
   .dark-mode & {
-    border-color: rgba(60, 60, 65, 0.9);
-    color: rgba(235, 235, 240, 0.9);
-    
-    &:after {
-      background-color: rgba(50, 50, 55, 0.9);
-    }
+    background-color: #d32f2f;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     
     &:hover {
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      background-color: #b71c1c;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
     }
   }
 `;
@@ -530,143 +399,338 @@ const PokemonGrid = styled(motion.div)<{ viewMode: string }>`
       : '1fr'};
     gap: ${props => props.viewMode === 'grid' ? '15px' : '20px'};
     margin-top: 15px;
-    padding: 0;
   }
 `;
 
 const PokemonItem = styled(motion.div)`
-  height: 100%;
+  position: relative;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
 `;
 
 const SearchHeader = styled.div`
-  margin-bottom: 30px;
-  padding: 20px;
-  background-color: var(--card-bg-light);
-  border-radius: var(--border-radius);
-  box-shadow: var(--card-shadow);
-  position: relative;
-  overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-  }
-  
-  .dark-mode & {
-    background-color: rgba(28, 28, 32, 0.9);
-    
-    &::before {
-      background: linear-gradient(90deg, rgba(50, 50, 55, 0.9), rgba(40, 40, 45, 0.9));
-    }
-  }
+  margin: 20px 0 30px;
+  text-align: center;
 `;
 
 const SearchResultsTitle = styled.h2`
-  font-size: 1.6rem;
-  margin-bottom: 10px;
-  color: var(--primary-color);
-  
-  .dark-mode & {
-    color: rgba(235, 235, 240, 0.9);
-  }
-`;
-
-const SearchResultsCount = styled.p`
+  font-size: 1.8rem;
+  margin-bottom: 8px;
   color: var(--text-light);
-  font-size: 1.1rem;
   
   .dark-mode & {
     color: var(--text-dark);
   }
   
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const SearchResultsCount = styled.p`
+  font-size: 1rem;
+  color: var(--text-light-secondary);
+  
   span {
     font-weight: 600;
-    color: var(--secondary-color);
+    color: var(--primary-color);
+  }
+  
+  .dark-mode & {
+    color: var(--text-dark-secondary);
     
-    .dark-mode & {
-      color: rgba(200, 200, 210, 0.9);
+    span {
+      color: var(--accent-color);
     }
   }
 `;
 
 const ErrorMessage = styled.div`
-  background-color: rgba(255, 82, 82, 0.1);
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid #f44336;
+  padding: 16px 20px;
+  border-radius: 4px;
   color: #d32f2f;
-  padding: 20px;
-  border-radius: var(--border-radius);
-  margin: 30px 0;
-  text-align: center;
-  border-left: 5px solid #d32f2f;
   font-weight: 500;
+  margin: 30px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   
   .dark-mode & {
-    background-color: rgba(255, 82, 82, 0.05);
-    color: #ff8a8a;
+    background-color: rgba(244, 67, 54, 0.15);
+    color: #ff6659;
   }
 `;
 
 const NoResults = styled.div`
   text-align: center;
-  padding: 60px 0;
-  color: var(--text-light);
-  font-size: 1.2rem;
+  padding: 60px 20px;
   
   img {
     width: 120px;
+    height: 120px;
     margin-bottom: 20px;
-    opacity: 0.7;
-    filter: grayscale(0.5);
-    animation: float 3s ease-in-out infinite;
+    opacity: 0.6;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--text-light);
+    
+    .dark-mode & {
+      color: var(--text-dark);
+    }
   }
   
   p {
-    margin-top: 15px;
-    opacity: 0.7;
-  }
-  
-  .dark-mode & {
-    color: var(--text-dark);
+    color: var(--text-light-secondary);
+    
+    .dark-mode & {
+      color: var(--text-dark-secondary);
+    }
   }
 `;
-
-// Updated Type colors for filtering with better contrast
-const typeColors: Record<string, string> = {
-  normal: '#A8A77A',
-  fire: '#FF6B3D',
-  water: '#4D90D5',
-  electric: '#F8CF32',
-  grass: '#68BB56',
-  ice: '#74D0C3',
-  fighting: '#CE416B',
-  poison: '#AB5ACA',
-  ground: '#D8765E',
-  flying: '#767DC6',
-  psychic: '#F45C85',
-  bug: '#A1B135',
-  rock: '#BBAA67',
-  ghost: '#6C5A97',
-  dragon: '#7764D0',
-  dark: '#5E5366',
-  steel: '#8A8EB5',
-  fairy: '#ED91E6'
-};
-
-// Updated Type colors for filtering with better contrast
-const POKEMON_TYPES = Object.keys(typeColors);
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
 };
 
+// Update the filters toggle container styling
+const FiltersToggleContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 20px;
+`;
+
+// Update the advanced filters toggle button to be more prominent
+const AdvancedFiltersToggle = styled.button`
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.25);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(var(--primary-color-rgb), 0.35);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+  }
+  
+  &.open {
+    background-color: var(--secondary-color);
+    
+    svg {
+      transform: rotate(180deg);
+    }
+  }
+  
+  .dark-mode & {
+    background-color: var(--accent-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    }
+    
+    &.open {
+      background-color: var(--primary-color);
+    }
+  }
+`;
+
+const FilterActiveIndicator = styled.span`
+  background-color: #fff;
+  color: var(--primary-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+  
+  .dark-mode & {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+  }
+`;
+
+// Add these new styled components after the SearchButton component
+const SuggestionsContainer = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: white;
+  border-radius: 12px;
+  margin-top: 5px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--primary-color-rgb), 0.5) transparent;
+  
+  /* Webkit scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--primary-color-rgb), 0.5);
+    border-radius: 10px;
+    border: 2px solid transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.7);
+  }
+  
+  .dark-mode & {
+    background-color: rgba(40, 40, 45, 0.95);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+    scrollbar-color: rgba(var(--secondary-color-rgb), 0.5) rgba(40, 40, 45, 0.2);
+    
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(var(--secondary-color-rgb), 0.5);
+    }
+    
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(var(--secondary-color-rgb), 0.7);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    margin-top: 3px;
+    border-radius: 10px;
+  }
+`;
+
+const SuggestionGroup = styled.div`
+  padding: 10px 0;
+  
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    
+    .dark-mode & {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+`;
+
+const SuggestionHeader = styled.div`
+  padding: 5px 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-light-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  .dark-mode & {
+    color: var(--text-dark-secondary);
+  }
+`;
+
+const SuggestionItem = styled.div`
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+  }
+  
+  .dark-mode &:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.2);
+  }
+  
+  .pokemon-id {
+    font-size: 0.85rem;
+    color: var(--text-light-secondary);
+    font-weight: 500;
+    
+    .dark-mode & {
+      color: var(--text-dark-secondary);
+    }
+  }
+  
+  .pokemon-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-light);
+    text-transform: capitalize;
+    
+    .dark-mode & {
+      color: var(--text-dark);
+    }
+  }
+  
+  .time-icon {
+    margin-right: 5px;
+    opacity: 0.7;
+  }
+`;
+
+const ClearHistoryButton = styled.button`
+  background: none;
+  border: none;
+  color: var(--text-light-secondary);
+  font-size: 0.8rem;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-left: auto;
+  display: block;
+  
+  &:hover {
+    color: var(--danger-color);
+    text-decoration: underline;
+  }
+  
+  .dark-mode & {
+    color: var(--text-dark-secondary);
+    
+    &:hover {
+      color: var(--danger-color);
+    }
+  }
+`;
+
 const Home: React.FC = () => {
   useTheme();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const { filters, clearFilters, toggleAdvancedFilters, activeFilterCount } = useFilters();
+  const { searchHistory, addToSearchHistory, clearUserSearchHistory } = useUser();
   
   const { 
     pokemonList, 
@@ -688,14 +752,21 @@ const Home: React.FC = () => {
 
   const [loadedPokemon, setLoadedPokemon] = useState<PokemonDetail[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
   const [filterLoading, setFilterLoading] = useState(false);
   const [filterError, setFilterError] = useState<Error | null>(null);
   
+  // Create a ref for the cache to persist across renders
+  const pokemonCacheRef = useRef(new PokemonCache());
+  
   const query = useQuery();
   const searchParam = query.get('search');
-  const typeParam = query.get('type');
   const viewParam = query.get('view');
+  
+  // Add a state for autocomplete suggestions and to show/hide the suggestion panel
+  const [suggestions, setSuggestions] = useState<PokemonDetail[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchFormRef = useRef<HTMLFormElement>(null);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   
   // Handle view mode via URL parameter
   useEffect(() => {
@@ -712,31 +783,66 @@ const Home: React.FC = () => {
     }
   }, [searchParam, setSearchQuery, executeSearch]);
   
-  // Handle type filter via URL parameter
-  useEffect(() => {
-    if (typeParam && POKEMON_TYPES.includes(typeParam)) {
-      setSelectedType(typeParam);
-    } else {
-      setSelectedType(null);
+  // Function to fetch Pokemon details with caching
+  const fetchPokemonDetails = useCallback(async (ids: string[]): Promise<PokemonDetail[]> => {
+    const cache = pokemonCacheRef.current;
+    const results: PokemonDetail[] = [];
+    const idsToFetch: string[] = [];
+    
+    // Check which IDs are cached and which need to be fetched
+    ids.forEach(id => {
+      if (cache.hasPokemonDetail(id)) {
+        const cachedPokemon = cache.getPokemonDetail(id);
+        if (cachedPokemon) {
+          results.push(cachedPokemon);
+        }
+      } else {
+        idsToFetch.push(id);
+      }
+    });
+    
+    // Fetch the non-cached Pokemon
+    if (idsToFetch.length > 0) {
+      const fetchPromises = idsToFetch.map(id => getPokemonDetail(id));
+      try {
+        const fetchedPokemon = await Promise.all(fetchPromises);
+        
+        // Cache the fetched Pokemon
+        fetchedPokemon.forEach((pokemon, index) => {
+          cache.setPokemonDetail(idsToFetch[index], pokemon);
+          results.push(pokemon);
+        });
+      } catch (error) {
+        console.error('Error fetching Pokemon details:', error);
+        throw error;
+      }
     }
-  }, [typeParam]);
+    
+    // Sort by ID to maintain consistent order
+    return results.sort((a, b) => a.id - b.id);
+  }, []);
   
   // Load Pokemon details from list
   useEffect(() => {
-    if (pokemonList && !searchQuery && !selectedType) {
+    if (pokemonList && !searchQuery && !filters.type) {
       const loadDetails = async () => {
         setLoadingDetails(true);
         try {
-          const detailsPromises = pokemonList.results.map(pokemon => {
-            // Extract ID from URL (format: https://pokeapi.co/api/v2/pokemon/1/)
-            const id = pokemon.url.split('/').filter(Boolean).pop();
-            return getPokemonDetail(id || '');
+          // Extract IDs from URLs
+          const ids = pokemonList.results.map(pokemon => {
+            return pokemon.url.split('/').filter(Boolean).pop() || '';
           });
           
-          const pokemonDetails = await Promise.all(detailsPromises);
-          setLoadedPokemon(pokemonDetails);
+          // Fetch Pokemon details with caching
+          const pokemonDetails = await fetchPokemonDetails(ids);
+          
+          // Apply filters to the Pokemon list
+          const filteredPokemon = applyFilters(pokemonDetails, filters);
+          
+          setLoadedPokemon(filteredPokemon);
         } catch (error) {
           console.error('Failed to load Pokemon details:', error);
+          setFilterError(error instanceof Error ? error : new Error('Failed to load Pokemon details'));
         } finally {
           setLoadingDetails(false);
         }
@@ -744,28 +850,50 @@ const Home: React.FC = () => {
       
       loadDetails();
     }
-  }, [pokemonList, searchQuery, selectedType]);
+  }, [pokemonList, searchQuery, filters, fetchPokemonDetails]);
   
-  // Handle type filtering
+  // Handle type filtering with caching
   useEffect(() => {
-    if (selectedType && !searchQuery) {
+    if (filters.type && typeof filters.type === 'string' && !searchQuery) {
       const loadPokemonByType = async () => {
         setFilterLoading(true);
         setFilterError(null);
+        
+        const cache = pokemonCacheRef.current;
+        const type = filters.type as string;
+        
         try {
-          const typeResults = await getPokemonByType(selectedType);
+          let typeResults;
           
-          // Get details for first 20 Pokemon of this type
-          const detailsPromises = typeResults.results.slice(0, 20).map(pokemon => {
-            const id = pokemon.url.split('/').filter(Boolean).pop();
-            return getPokemonDetail(id || '');
-          });
+          // Check cache first
+          if (cache.hasTypeResults(type)) {
+            typeResults = cache.getTypeResults(type);
+          } else {
+            // Fetch from API if not cached
+            const apiResults = await getPokemonByType(type);
+            
+            // Get details for Pokemon of this type
+            const detailsPromises = apiResults.results.slice(0, 20).map(pokemon => {
+              const id = pokemon.url.split('/').filter(Boolean).pop() || '';
+              return getPokemonDetail(id);
+            });
+            
+            typeResults = await Promise.all(detailsPromises);
+            
+            // Cache the results
+            cache.setTypeResults(type, typeResults);
+          }
           
-          const pokemonDetails = await Promise.all(detailsPromises);
-          setLoadedPokemon(pokemonDetails);
+          if (typeResults) {
+            // Apply additional filters
+            const filteredPokemon = applyFilters(typeResults, filters);
+            setLoadedPokemon(filteredPokemon);
+          } else {
+            setLoadedPokemon([]);
+          }
         } catch (error) {
-          console.error(`Failed to load ${selectedType} type Pokemon:`, error);
-          setFilterError(error instanceof Error ? error : new Error('Failed to load Pokemon by type'));
+          console.error(`Failed to load ${type} type Pokemon:`, error);
+          setFilterError(error instanceof Error ? error : new Error(`Failed to load ${type} type Pokemon`));
         } finally {
           setFilterLoading(false);
         }
@@ -773,182 +901,334 @@ const Home: React.FC = () => {
       
       loadPokemonByType();
     }
-  }, [selectedType, searchQuery]);
+  }, [filters, searchQuery]);
 
-  const handleViewModeToggle = (mode: 'list' | 'grid') => {
+  // Memoize the view mode toggle handler to prevent recreation on every render
+  const handleViewModeToggle = useCallback((mode: 'list' | 'grid') => {
     setViewMode(mode);
     
     // Update URL with the view mode
     const params = new URLSearchParams(window.location.search);
     params.set('view', mode);
     
-    // Preserve existing search or type parameters
-    if (searchQuery) {
-      params.set('search', searchQuery);
-    }
-    if (selectedType) {
-      params.set('type', selectedType);
-    }
-    
     navigate(`/?${params.toString()}`);
-  };
+  }, [navigate]);
 
-  const handleTypeClick = (type: string) => {
-    // Toggle off if already selected
-    if (selectedType === type) {
-      setSelectedType(null);
-      
-      const params = new URLSearchParams();
-      if (viewMode !== 'list') {
-        params.set('view', viewMode);
-      }
-      navigate(`/?${params.toString() || ''}`);
+  // Add this function for handling Pokemon suggestions
+  const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    if (value.trim().length >= 2) {
+      // Show suggestions when typing
+      setShowSuggestions(true);
     } else {
-      setSelectedType(type);
-      
-      const params = new URLSearchParams();
-      params.set('type', type);
-      if (viewMode !== 'list') {
-        params.set('view', viewMode);
-      }
-      navigate(`/?${params.toString()}`);
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
-    
-    // Clear search if it was active
-    if (searchQuery) {
-      setSearchQuery('');
-    }
-  };
+  }, [setSearchQuery]);
   
-  const clearFilters = () => {
-    setSelectedType(null);
-    setSearchQuery('');
+  // Update suggestions when search results change
+  useEffect(() => {
+    if (searchResults.length > 0 && searchQuery.trim().length >= 2) {
+      setSuggestions(searchResults.slice(0, 5));
+    }
+  }, [searchResults, searchQuery]);
+  
+  // Handle clicking outside the search form to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchFormRef.current && !searchFormRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
     
-    const params = new URLSearchParams();
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
+  // Select a suggestion
+  const handleSelectSuggestion = useCallback((pokemon: PokemonDetail) => {
+    setSearchQuery(pokemon.name);
+    setShowSuggestions(false);
+    // Add to search history
+    addToSearchHistory(pokemon.name);
+    
+    // Update URL and navigate
+    const params = new URLSearchParams(window.location.search);
+    params.set('search', pokemon.name);
     if (viewMode !== 'list') {
       params.set('view', viewMode);
     }
-    navigate(`/?${params.toString() || ''}`);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
+    
+    navigate(`/?${params.toString()}`);
+    executeSearch();
+  }, [setSearchQuery, addToSearchHistory, viewMode, navigate, executeSearch]);
+  
+  // Handle selecting a recent search
+  const handleSelectRecentSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    setShowSuggestions(false);
+    
+    // Update URL and navigate
+    const params = new URLSearchParams(window.location.search);
+    params.set('search', query);
+    if (viewMode !== 'list') {
+      params.set('view', viewMode);
+    }
+    
+    navigate(`/?${params.toString()}`);
+    executeSearch();
+  }, [setSearchQuery, viewMode, navigate, executeSearch]);
+  
+  // Update the search submission handler to also add to history
+  const handleSearchSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      const params = new URLSearchParams();
+      // Add to search history
+      addToSearchHistory(searchQuery);
+      
+      const params = new URLSearchParams(window.location.search);
       params.set('search', searchQuery);
       if (viewMode !== 'list') {
         params.set('view', viewMode);
       }
+      
+      // Clear all filters when searching
+      clearFilters();
+      
       navigate(`/?${params.toString()}`);
       executeSearch();
+      setShowSuggestions(false);
     }
-  };
+  }, [searchQuery, viewMode, navigate, clearFilters, executeSearch, addToSearchHistory]);
 
-  // Determine what to show: error, loading, or content
-  let content;
+  // Clear cache when component unmounts
+  useEffect(() => {
+    const cache = pokemonCacheRef.current;
+    return () => {
+      cache.clear();
+    };
+  }, []);
+
+  // Handle keyboard navigation for suggestions
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions) return;
+    
+    // Get the total number of selectable items (suggestions + recent searches)
+    const totalSuggestions = suggestions.length;
+    const totalHistory = searchHistory.length > 0 ? Math.min(searchHistory.length, 5) : 0;
+    const totalItems = totalSuggestions + totalHistory;
+    
+    if (totalItems === 0) return;
+    
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prevIndex => 
+          prevIndex < totalItems - 1 ? prevIndex + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prevIndex => 
+          prevIndex > 0 ? prevIndex - 1 : totalItems - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0) {
+          if (selectedSuggestionIndex < totalSuggestions) {
+            // Handle Pokemon suggestion selection
+            handleSelectSuggestion(suggestions[selectedSuggestionIndex]);
+          } else {
+            // Handle recent search selection
+            const historyIndex = selectedSuggestionIndex - totalSuggestions;
+            handleSelectRecentSearch(searchHistory[historyIndex]);
+          }
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        break;
+    }
+  }, [showSuggestions, suggestions, searchHistory, handleSelectSuggestion, handleSelectRecentSearch, selectedSuggestionIndex]);
   
-  if (listError || searchError || filterError) {
-    content = (
-      <ErrorMessage>
-        {listError?.message || searchError?.message || filterError?.message || 'Failed to load Pokémon data'}
-      </ErrorMessage>
-    );
-  } else if (loadingList || loadingSearch || loadingDetails || filterLoading) {
-    content = <Loading />;
-  } else if (searchQuery && searchResults) {
-    content = (
-      <>
-        <SearchHeader>
-          <SearchResultsTitle>Search Results for "{searchQuery}"</SearchResultsTitle>
-          <SearchResultsCount>
-            Found <span>{searchResults.length}</span> Pokémon
-          </SearchResultsCount>
-        </SearchHeader>
-        
-        <ViewModeContainer>
-          <ViewModeLabel>View Mode:</ViewModeLabel>
-          <ViewToggle>
-            <ViewToggleButton 
-              active={viewMode === 'grid'} 
-              onClick={() => handleViewModeToggle('grid')}
-              aria-label="Grid View"
-            >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
-              </svg>
-            </ViewToggleButton>
-            <ViewToggleButton 
-              active={viewMode === 'list'} 
-              onClick={() => handleViewModeToggle('list')}
-              aria-label="List View"
-            >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
-              </svg>
-            </ViewToggleButton>
-          </ViewToggle>
-        </ViewModeContainer>
-        
-        {searchResults.length > 0 ? (
-          <PokemonGrid 
-            viewMode={viewMode}
-            variants={gridVariants}
-            initial="hidden"
-            animate="show"
-          >
-            {searchResults.map(pokemon => (
-              <PokemonItem 
-                key={pokemon.id}
-                variants={itemVariants}
+  // Reset selected suggestion index when suggestions change
+  useEffect(() => {
+    setSelectedSuggestionIndex(-1);
+  }, [suggestions, searchHistory]);
+
+  // Memoize the content display logic to avoid unnecessary recalculations
+  const content = useMemo(() => {
+    if (listError || searchError || filterError) {
+      return (
+        <ErrorMessage>
+          {listError?.message || searchError?.message || filterError?.message || 'Failed to load Pokémon data'}
+        </ErrorMessage>
+      );
+    }
+    
+    if (loadingList || loadingSearch || loadingDetails || filterLoading) {
+      // Use the new Loading component instead of a div
+      return <Loading />;
+    }
+    
+    if (searchQuery && searchResults) {
+      return (
+        <>
+          <SearchHeader>
+            <SearchResultsTitle>Search Results for "{searchQuery}"</SearchResultsTitle>
+            <SearchResultsCount>
+              Found <span>{searchResults.length}</span> Pokémon
+            </SearchResultsCount>
+          </SearchHeader>
+          
+          {/* View Mode Toggle */}
+          <ViewModeContainer>
+            <ViewModeLabel>View Mode:</ViewModeLabel>
+            <ViewToggle>
+              <ViewToggleButton 
+                active={viewMode === 'grid'} 
+                onClick={() => handleViewModeToggle('grid')}
+                aria-label="Grid View"
               >
-                <PokemonCard pokemon={pokemon} viewMode={viewMode} />
-              </PokemonItem>
-            ))}
-          </PokemonGrid>
-        ) : (
-          <NoResults>
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/129.png" alt="Magikarp" />
-            <h3>No Pokémon Found</h3>
-            <p>Try searching for another Pokémon name or ID</p>
-          </NoResults>
-        )}
-      </>
-    );
-  } else if (selectedType) {
-    content = (
-      <>
-        <SearchHeader>
-          <SearchResultsTitle>{selectedType} Type Pokémon</SearchResultsTitle>
-          <SearchResultsCount>
-            Showing <span>{loadedPokemon.length}</span> Pokémon
-          </SearchResultsCount>
-        </SearchHeader>
-        
-        <ViewModeContainer>
-          <ViewModeLabel>View Mode:</ViewModeLabel>
-          <ViewToggle>
-            <ViewToggleButton 
-              active={viewMode === 'grid'} 
-              onClick={() => handleViewModeToggle('grid')}
-              aria-label="Grid View"
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
+                </svg>
+              </ViewToggleButton>
+              <ViewToggleButton 
+                active={viewMode === 'list'} 
+                onClick={() => handleViewModeToggle('list')}
+                aria-label="List View"
+              >
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
+                </svg>
+              </ViewToggleButton>
+            </ViewToggle>
+          </ViewModeContainer>
+          
+          {searchResults.length > 0 ? (
+            <PokemonGrid 
+              viewMode={viewMode}
+              variants={gridVariants}
+              initial="hidden"
+              animate="show"
             >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
-              </svg>
-            </ViewToggleButton>
-            <ViewToggleButton 
-              active={viewMode === 'list'} 
-              onClick={() => handleViewModeToggle('list')}
-              aria-label="List View"
+              {searchResults.map(pokemon => (
+                <PokemonItem 
+                  key={pokemon.id}
+                  variants={itemVariants}
+                >
+                  <PokemonCard pokemon={pokemon} viewMode={viewMode} />
+                </PokemonItem>
+              ))}
+            </PokemonGrid>
+          ) : (
+            <NoResults>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/129.png" alt="Magikarp" />
+              <h3>No Pokémon Found</h3>
+              <p>Try searching for another Pokémon name or ID</p>
+            </NoResults>
+          )}
+        </>
+      );
+    }
+    
+    if (filters.type) {
+      return (
+        <>
+          <SearchHeader>
+            <SearchResultsTitle>{filters.type} Type Pokémon</SearchResultsTitle>
+            <SearchResultsCount>
+              Showing <span>{loadedPokemon.length}</span> Pokémon
+            </SearchResultsCount>
+          </SearchHeader>
+          
+          {/* View Mode Toggle */}
+          <ViewModeContainer>
+            <ViewModeLabel>View Mode:</ViewModeLabel>
+            <ViewToggle>
+              <ViewToggleButton 
+                active={viewMode === 'grid'} 
+                onClick={() => handleViewModeToggle('grid')}
+                aria-label="Grid View"
+              >
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
+                </svg>
+              </ViewToggleButton>
+              <ViewToggleButton 
+                active={viewMode === 'list'} 
+                onClick={() => handleViewModeToggle('list')}
+                aria-label="List View"
+              >
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
+                </svg>
+              </ViewToggleButton>
+            </ViewToggle>
+          </ViewModeContainer>
+          
+          {loadedPokemon.length > 0 ? (
+            <PokemonGrid 
+              viewMode={viewMode}
+              variants={gridVariants}
+              initial="hidden"
+              animate="show"
             >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
-              </svg>
-            </ViewToggleButton>
-          </ViewToggle>
-        </ViewModeContainer>
-        
-        {loadedPokemon.length > 0 ? (
+              {loadedPokemon.map(pokemon => (
+                <PokemonItem 
+                  key={pokemon.id}
+                  variants={itemVariants}
+                >
+                  <PokemonCard pokemon={pokemon} viewMode={viewMode} />
+                </PokemonItem>
+              ))}
+            </PokemonGrid>
+          ) : (
+            <NoResults>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/54.png" alt="Psyduck" />
+              <h3>No Pokémon Found</h3>
+              <p>Try selecting different filter options</p>
+            </NoResults>
+          )}
+        </>
+      );
+    }
+    
+    if (loadedPokemon.length > 0) {
+      return (
+        <>
+          <ViewModeContainer>
+            <ViewModeLabel>View Mode:</ViewModeLabel>
+            <ViewToggle>
+              <ViewToggleButton 
+                active={viewMode === 'grid'} 
+                onClick={() => handleViewModeToggle('grid')}
+                aria-label="Grid View"
+              >
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
+                </svg>
+              </ViewToggleButton>
+              <ViewToggleButton 
+                active={viewMode === 'list'} 
+                onClick={() => handleViewModeToggle('list')}
+                aria-label="List View"
+              >
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
+                </svg>
+              </ViewToggleButton>
+            </ViewToggle>
+          </ViewModeContainer>
+          
           <PokemonGrid 
             viewMode={viewMode}
             variants={gridVariants}
@@ -964,76 +1244,97 @@ const Home: React.FC = () => {
               </PokemonItem>
             ))}
           </PokemonGrid>
-        ) : (
-          <NoResults>
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/54.png" alt="Psyduck" />
-            <h3>No Pokémon Found</h3>
-            <p>Try selecting a different type</p>
-          </NoResults>
-        )}
-      </>
-    );
-  } else if (loadedPokemon.length > 0) {
-    content = (
-      <>
-        <ViewModeContainer>
-          <ViewModeLabel>View Mode:</ViewModeLabel>
-          <ViewToggle>
-            <ViewToggleButton 
-              active={viewMode === 'grid'} 
-              onClick={() => handleViewModeToggle('grid')}
-              aria-label="Grid View"
-            >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
-              </svg>
-            </ViewToggleButton>
-            <ViewToggleButton 
-              active={viewMode === 'list'} 
-              onClick={() => handleViewModeToggle('list')}
-              aria-label="List View"
-            >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
-              </svg>
-            </ViewToggleButton>
-          </ViewToggle>
-        </ViewModeContainer>
-        
-        <PokemonGrid 
-          viewMode={viewMode}
-          variants={gridVariants}
-          initial="hidden"
-          animate="show"
-        >
-          {loadedPokemon.map(pokemon => (
-            <PokemonItem 
-              key={pokemon.id}
-              variants={itemVariants}
-            >
-              <PokemonCard pokemon={pokemon} viewMode={viewMode} />
-            </PokemonItem>
-          ))}
-        </PokemonGrid>
-        
-        <Pagination 
-          currentPage={page} 
-          totalPages={totalPages} 
-          onPageChange={goToPage} 
-        />
-      </>
-    );
-  } else {
-    content = <Loading />;
-  }
+          
+          {/* Only show pagination when no filters are active */}
+          {!activeFilterCount && (
+            <Pagination 
+              currentPage={page} 
+              totalPages={totalPages} 
+              onPageChange={goToPage} 
+            />
+          )}
+        </>
+      );
+    }
+    
+    // For the initial home screen when data is loading
+    if (loadingList || loadingDetails) {
+      return (
+        <>
+          <ViewModeContainer>
+            <ViewModeLabel>View Mode:</ViewModeLabel>
+            <ViewToggle>
+              <ViewToggleButton 
+                active={viewMode === 'grid'} 
+                onClick={() => handleViewModeToggle('grid')}
+                aria-label="Grid View"
+              >
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />
+                </svg>
+              </ViewToggleButton>
+              <ViewToggleButton 
+                active={viewMode === 'list'} 
+                onClick={() => handleViewModeToggle('list')}
+                aria-label="List View"
+              >
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
+                </svg>
+              </ViewToggleButton>
+            </ViewToggle>
+          </ViewModeContainer>
+          
+          <PokemonGrid 
+            viewMode={viewMode}
+            variants={gridVariants}
+            initial="hidden"
+            animate="show"
+          >
+            {/* Display skeleton loaders instead of a loading message */}
+            {Array.from({ length: 12 }).map((_, index) => (
+              <PokemonItem 
+                key={index}
+                variants={itemVariants}
+              >
+                <PokemonCardSkeleton viewMode={viewMode} />
+              </PokemonItem>
+            ))}
+          </PokemonGrid>
+        </>
+      );
+    }
+    
+    return <Loading />;
+  }, [
+    listError, searchError, filterError, 
+    loadingList, loadingSearch, loadingDetails, filterLoading,
+    searchQuery, searchResults, filters.type, loadedPokemon, 
+    viewMode, handleViewModeToggle, page, totalPages, goToPage, activeFilterCount
+  ]);
+
+  // Function to clear both filters and search query
+  const handleClearAllFilters = useCallback(() => {
+    // Clear the search query
+    setSearchQuery('');
+    
+    // Update URL to remove search parameter
+    const params = new URLSearchParams(window.location.search);
+    params.delete('search');
+    if (viewMode !== 'list') {
+      params.set('view', viewMode);
+    }
+    
+    // Navigate to updated URL
+    navigate(`/?${params.toString()}`);
+    
+    // Clear all other filters
+    clearFilters();
+  }, [clearFilters, navigate, setSearchQuery, viewMode]);
 
   return (
     <HomeContainer>
-      <ParallaxBackground>
-        <ParallaxLayer1 />
-        <ParallaxLayer2 />
-        <ParallaxLayer3 />
-      </ParallaxBackground>
+      <ParallaxBackground />
       
       <Header>
         <Title>Pokémon Explorer</Title>
@@ -1043,34 +1344,98 @@ const Home: React.FC = () => {
       </Header>
       
       <FiltersContainer>
-        <SearchForm onSubmit={handleSearch}>
+        <SearchForm ref={searchFormRef} onSubmit={handleSearchSubmit}>
           <SearchIcon />
           <SearchInput 
             type="text"
             placeholder="Search for a Pokémon by name or ID..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={handleSearchInputChange}
+            onFocus={() => searchQuery.trim().length >= 2 && setShowSuggestions(true)}
+            onKeyDown={handleKeyDown}
           />
           <SearchButton type="submit" aria-label="Search" />
+          
+          {/* Autocomplete suggestions and recent searches */}
+          {showSuggestions && (
+            <SuggestionsContainer>
+              {/* Autocomplete suggestions */}
+              {suggestions.length > 0 && (
+                <SuggestionGroup>
+                  <SuggestionHeader>Pokémon Suggestions</SuggestionHeader>
+                  {suggestions.map((pokemon, index) => (
+                    <SuggestionItem 
+                      key={pokemon.id} 
+                      onClick={() => handleSelectSuggestion(pokemon)}
+                      style={{
+                        backgroundColor: selectedSuggestionIndex === index 
+                          ? 'rgba(var(--primary-color-rgb), 0.15)' 
+                          : 'transparent'
+                      }}
+                    >
+                      <span className="pokemon-id">#{pokemon.id.toString().padStart(3, '0')}</span>
+                      <span className="pokemon-name">{pokemon.name}</span>
+                    </SuggestionItem>
+                  ))}
+                </SuggestionGroup>
+              )}
+              
+              {/* Recent searches */}
+              {searchHistory.length > 0 && (
+                <SuggestionGroup>
+                  <SuggestionHeader>
+                    Recent Searches
+                    <ClearHistoryButton onClick={(e) => {
+                      e.stopPropagation();
+                      clearUserSearchHistory();
+                      setShowSuggestions(false);
+                    }}>
+                      Clear History
+                    </ClearHistoryButton>
+                  </SuggestionHeader>
+                  {searchHistory.slice(0, 5).map((query, index) => (
+                    <SuggestionItem 
+                      key={index} 
+                      onClick={() => handleSelectRecentSearch(query)}
+                      style={{
+                        backgroundColor: selectedSuggestionIndex === (suggestions.length + index) 
+                          ? 'rgba(var(--primary-color-rgb), 0.15)' 
+                          : 'transparent'
+                      }}
+                    >
+                      <span className="time-icon">⏱️</span>
+                      <span className="pokemon-name">{query}</span>
+                    </SuggestionItem>
+                  ))}
+                </SuggestionGroup>
+              )}
+            </SuggestionsContainer>
+          )}
         </SearchForm>
         
-        <TypesTitle>Filter by Type</TypesTitle>
-        <TypeButtonsRow>
-          {POKEMON_TYPES.map(type => (
-            <TypeButton 
-              key={type}
-              onClick={() => handleTypeClick(type)}
-              active={selectedType === type}
-              type={type}
-            >
-              {type}
-            </TypeButton>
-          ))}
-        </TypeButtonsRow>
+        <FiltersToggleContainer>
+          <AdvancedFiltersToggle 
+            onClick={toggleAdvancedFilters}
+            className={filters.showAdvancedFilters ? 'open' : ''}
+            aria-expanded={filters.showAdvancedFilters}
+            aria-controls="advanced-filters"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 4h18v2H3V4zm4 7h10v2H7v-2zm4 7h2v2h-2v-2z"/>
+            </svg>
+            {filters.showAdvancedFilters ? 'Hide Filters' : 'Show Filters'}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 10l5 5 5-5z" />
+            </svg>
+            {activeFilterCount > 0 && <FilterActiveIndicator>{activeFilterCount}</FilterActiveIndicator>}
+          </AdvancedFiltersToggle>
+        </FiltersToggleContainer>
         
-        {(selectedType || searchQuery) && (
-          <ClearButton onClick={clearFilters}>
-            Clear Filters
+        <AdvancedFilters />
+        
+        {(activeFilterCount > 0 || searchQuery) && (
+          <ClearButton onClick={handleClearAllFilters}>
+            Clear All Filters
           </ClearButton>
         )}
       </FiltersContainer>

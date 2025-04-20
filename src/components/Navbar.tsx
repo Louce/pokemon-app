@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
+import { useFavorites } from '../contexts/FavoritesContext';
+import LoginModal from './LoginModal';
 
 // Main navbar container
 const NavbarContainer = styled.nav`
@@ -103,9 +106,66 @@ const Logo = styled(Link)`
 const DesktopNav = styled.div`
   display: flex;
   align-items: center;
+  gap: 15px;
   
   @media (max-width: 768px) {
     display: none;
+  }
+`;
+
+// Navigation links
+const NavLink = styled(Link)`
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.3s ease;
+    z-index: -1;
+  }
+  
+  &:hover {
+    transform: translateY(-2px);
+    
+    &::before {
+      transform: scaleY(1);
+    }
+  }
+  
+  &.active {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   }
 `;
 
@@ -147,6 +207,79 @@ const ThemeToggleDesktop = styled.button`
     &:hover {
       border-color: rgba(79, 193, 166, 0.7);
     }
+  }
+`;
+
+// User controls container
+const UserControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+`;
+
+// Login/logout button
+const AuthButton = styled.button`
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+  }
+  
+  .icon {
+    font-size: 1.1rem;
+  }
+`;
+
+// User profile container
+const UserProfile = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  cursor: pointer;
+  position: relative;
+  padding: 5px 12px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .username {
+    font-weight: 600;
+  }
+  
+  .icon {
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover .icon {
+    transform: rotate(180deg);
   }
 `;
 
@@ -195,81 +328,6 @@ const MobileOverlay = styled.div<{ isOpen: boolean }>`
     z-index: 998;
     transition: opacity 0.3s ease;
     opacity: ${({ isOpen }) => isOpen ? '1' : '0'};
-  }
-`;
-
-// Mobile Pokemon logo
-const MobilePokemonLogo = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 40px;
-  
-  img {
-    width: 80px;
-    height: auto;
-    margin-bottom: 15px;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-  }
-  
-  .title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #333;
-    
-    .dark-mode & {
-      color: #fff;
-    }
-    
-    .accent {
-      color: var(--primary-color);
-      
-      .dark-mode & {
-        color: var(--secondary-color);
-      }
-    }
-  }
-`;
-
-// Navigation links container
-const NavLinks = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  gap: 15px;
-`;
-
-// Navigation link
-const NavLink = styled(Link)`
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  width: 100%;
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #333;
-  text-decoration: none;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-  
-  .dark-mode & {
-    color: #fff;
-  }
-  
-  &:hover {
-    background: rgba(var(--primary-color-rgb), 0.1);
-    transform: translateX(5px);
-    
-    .dark-mode & {
-      background: rgba(var(--secondary-color-rgb), 0.1);
-    }
-  }
-  
-  .icon {
-    margin-right: 12px;
-    font-size: 1.3rem;
-    opacity: 0.8;
   }
 `;
 
@@ -420,12 +478,145 @@ const MenuToggle = styled.button`
   }
 `;
 
+// Mobile menu link styling
+const MobileNavLink = styled(Link)`
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-decoration: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+  
+  .dark-mode & {
+    color: var(--text-dark);
+  }
+  
+  &:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+  }
+  
+  .nav-icon {
+    margin-right: 15px;
+    font-size: 1.3rem;
+  }
+  
+  .badge {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    background: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+  }
+`;
+
+const MobileUserSection = styled.div`
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 12px;
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  
+  .dark-mode & {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+  }
+`;
+
+const MobileUserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+    color: white;
+    font-size: 1.2rem;
+  }
+  
+  .username {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-light);
+    
+    .dark-mode & {
+      color: var(--text-dark);
+    }
+  }
+`;
+
+const MobileAuthButton = styled.button`
+  width: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .button-icon {
+    margin-right: 10px;
+  }
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--text-light);
+  cursor: pointer;
+  z-index: 10;
+  
+  .dark-mode & {
+    color: var(--text-dark);
+  }
+  
+  &:hover {
+    color: var(--primary-color);
+  }
+`;
+
 // Navbar component
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  
   const { darkMode, toggleTheme } = useTheme();
-  const menuRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const { isLoggedIn, currentUser, logoutUser } = useUser();
+  const { favorites } = useFavorites();
   
   // Toggle mobile menu
   const toggleMenu = () => {
@@ -437,15 +628,15 @@ const Navbar: React.FC = () => {
     toggleTheme();
   };
   
-  // Close menu when clicking outside
+  // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        isMenuOpen && 
-        menuRef.current && 
-        buttonRef.current && 
-        !menuRef.current.contains(event.target as Node) && 
-        !buttonRef.current.contains(event.target as Node)
+        isMenuOpen &&
+        mobileNavRef.current &&
+        !mobileNavRef.current.contains(event.target as Node) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(event.target as Node)
       ) {
         setIsMenuOpen(false);
       }
@@ -458,33 +649,53 @@ const Navbar: React.FC = () => {
     };
   }, [isMenuOpen]);
   
-  // Prevent scrolling when menu is open
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
+  // Handle login and logout
+  const handleAuthAction = () => {
+    if (isLoggedIn) {
+      logoutUser();
     } else {
-      document.body.style.overflow = '';
+      setIsLoginModalOpen(true);
     }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMenuOpen]);
-
+  };
+  
   return (
     <>
       <NavbarContainer>
         <Logo to="/">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="PokéBall" />
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Poké Ball" />
           <span>Poké<span className="text-accent">Dex</span></span>
         </Logo>
         
-        {/* Desktop Navigation */}
         <DesktopNav>
-          <ThemeToggleDesktop onClick={handleThemeToggle}>
-            <span className="icon">{darkMode ? '☀️' : '🌙'}</span>
-            <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
-          </ThemeToggleDesktop>
+          <NavLink to="/">Home</NavLink>
+          {isLoggedIn && (
+            <NavLink to="/favorites">
+              Favorites
+              {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
+            </NavLink>
+          )}
+          
+          <UserControls>
+            <ThemeToggleDesktop onClick={handleThemeToggle} aria-label="Toggle dark mode">
+              <span className="icon">{darkMode ? '🌙' : '☀️'}</span>
+              <span>{darkMode ? 'Dark' : 'Light'}</span>
+            </ThemeToggleDesktop>
+            
+            {isLoggedIn ? (
+              <UserProfile>
+                <div className="avatar">
+                  {currentUser?.username.charAt(0).toUpperCase()}
+                </div>
+                <span className="username">{currentUser?.username}</span>
+                <span className="icon">▼</span>
+              </UserProfile>
+            ) : (
+              <AuthButton onClick={handleAuthAction}>
+                <span className="icon">👤</span>
+                <span>Sign In</span>
+              </AuthButton>
+            )}
+          </UserControls>
         </DesktopNav>
         
         {/* Mobile Navigation Controls */}
@@ -496,7 +707,7 @@ const Navbar: React.FC = () => {
           
           {/* Mobile Menu Button */}
           <MenuToggle 
-            ref={buttonRef}
+            ref={menuButtonRef}
             onClick={toggleMenu} 
             className={isMenuOpen ? 'open' : ''}
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
@@ -510,32 +721,59 @@ const Navbar: React.FC = () => {
       
       {/* Mobile Navigation */}
       <MobileOverlay isOpen={isMenuOpen} onClick={() => setIsMenuOpen(false)} />
-      <MobileNav ref={menuRef} isOpen={isMenuOpen}>
-        <MobilePokemonLogo>
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu" />
-          <div className="title">Poké<span className="accent">Dex</span></div>
-        </MobilePokemonLogo>
+      <MobileNav ref={mobileNavRef} isOpen={isMenuOpen}>
+        <CloseButton onClick={() => setIsMenuOpen(false)}>×</CloseButton>
         
-        <NavLinks>
-          <NavLink to="/favorites">
-            <span className="icon">⭐</span>
+        {/* Mobile User Section */}
+        {isLoggedIn ? (
+          <MobileUserSection>
+            <MobileUserInfo>
+              <div className="avatar">
+                {currentUser?.username.charAt(0).toUpperCase()}
+              </div>
+              <div className="username">{currentUser?.username}</div>
+            </MobileUserInfo>
+            <MobileAuthButton onClick={handleAuthAction}>
+              <span className="button-icon">👋</span>
+              Sign Out
+            </MobileAuthButton>
+          </MobileUserSection>
+        ) : (
+          <MobileUserSection>
+            <MobileAuthButton onClick={handleAuthAction}>
+              <span className="button-icon">👤</span>
+              Sign In
+            </MobileAuthButton>
+          </MobileUserSection>
+        )}
+        
+        {/* Mobile Navigation Links */}
+        <MobileNavLink to="/" onClick={() => setIsMenuOpen(false)}>
+          <span className="nav-icon">🏠</span>
+          Home
+        </MobileNavLink>
+        
+        {isLoggedIn && (
+          <MobileNavLink to="/favorites" onClick={() => setIsMenuOpen(false)}>
+            <span className="nav-icon">❤️</span>
             Favorites
-          </NavLink>
-          <NavLink to="/types">
-            <span className="icon">🔠</span>
-            Types
-          </NavLink>
-          <NavLink to="/about">
-            <span className="icon">ℹ️</span>
-            About
-          </NavLink>
-        </NavLinks>
+            {favorites.length > 0 && (
+              <span className="badge">{favorites.length}</span>
+            )}
+          </MobileNavLink>
+        )}
         
+        {/* Mobile Theme Toggle */}
         <MobileThemeToggleSidebar onClick={handleThemeToggle}>
-          <span className="icon">{darkMode ? '☀️' : '🌙'}</span>
-          <span>{darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+          <div className="icon">{darkMode ? '☀️' : '🌙'}</div>
+          <div className="text">{darkMode ? 'Light Mode' : 'Dark Mode'}</div>
         </MobileThemeToggleSidebar>
       </MobileNav>
+      
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
     </>
   );
 };

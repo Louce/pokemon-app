@@ -9,6 +9,7 @@ interface UseSearchPokemonResult {
   setSearchQuery: (query: string) => void;
   executeSearch: () => Promise<void>;
   clearSearch: () => void;
+  getSuggestions: (query: string) => Promise<void>;
 }
 
 export const useSearchPokemon = (): UseSearchPokemonResult => {
@@ -35,19 +36,36 @@ export const useSearchPokemon = (): UseSearchPokemonResult => {
       setLoading(false);
     }
   }, [searchQuery]);
+  
+  // New function for getting suggestions without the loading state
+  const getSuggestions = useCallback(async (query: string) => {
+    if (!query.trim() || query.trim().length < 2) {
+      return;
+    }
+    
+    try {
+      const results = await searchPokemon(query, true); // true flag for suggestions mode
+      setSearchResults(results);
+      setError(null);
+    } catch (err) {
+      // Silently handle errors for suggestions
+      console.error('Error getting suggestions:', err);
+    }
+  }, []);
 
   useEffect(() => {
     // Only execute search if query length is at least 2 characters
     if (searchQuery.trim().length >= 2) {
       const debounceTimer = setTimeout(() => {
-        executeSearch();
-      }, 500);
+        // Use getSuggestions instead of the full search for faster feedback
+        getSuggestions(searchQuery);
+      }, 300); // Reduced from 500ms to 300ms for faster suggestions
 
       return () => clearTimeout(debounceTimer);
     } else if (searchQuery === '') {
       setSearchResults([]);
     }
-  }, [searchQuery, executeSearch]);
+  }, [searchQuery, getSuggestions]);
 
   const clearSearch = () => {
     setSearchQuery('');
@@ -61,6 +79,7 @@ export const useSearchPokemon = (): UseSearchPokemonResult => {
     searchQuery,
     setSearchQuery,
     executeSearch,
-    clearSearch
+    clearSearch,
+    getSuggestions
   };
 }; 

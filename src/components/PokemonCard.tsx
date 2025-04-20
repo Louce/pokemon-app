@@ -4,6 +4,9 @@ import styled from 'styled-components';
 import { PokemonDetail } from '../services/pokemonService';
 import { useTheme } from '../contexts/ThemeContext';
 import { typeColors, getBackgroundColorByType } from '../utils/typeColors';
+import FavoriteButton from './FavoriteButton';
+import { useDispatch } from 'react-redux';
+import { addToRecentlyViewed } from '../redux/slices/pokemonSlice';
 
 interface PokemonCardProps {
   pokemon: PokemonDetail;
@@ -78,6 +81,12 @@ const Card = styled(Link)<{
   @media (max-width: 480px) {
     padding: ${props => props.viewMode === 'list' ? '15px' : '10px'};
     border-radius: 16px;
+    border-width: 1px;
+  }
+  
+  @media (max-width: 360px) {
+    padding: ${props => props.viewMode === 'list' ? '12px 10px' : '8px'};
+    border-radius: 12px;
   }
   
   &:hover {
@@ -88,6 +97,10 @@ const Card = styled(Link)<{
       
     @media (max-width: 768px) {
       transform: translateY(-3px);
+    }
+    
+    @media (max-width: 480px) {
+      transform: translateY(-2px);
     }
   }
 
@@ -144,6 +157,13 @@ const PokemonImage = styled.div<{ viewMode?: 'list' | 'grid'; isDarkMode: boolea
     width: ${props => props.viewMode === 'grid' ? '100px' : '90px'};
     height: ${props => props.viewMode === 'grid' ? '100px' : '90px'};
     margin-right: ${props => props.viewMode === 'list' ? '10px' : '0'};
+  }
+  
+  @media (max-width: 360px) {
+    width: ${props => props.viewMode === 'grid' ? '85px' : '70px'};
+    height: ${props => props.viewMode === 'grid' ? '85px' : '70px'};
+    margin-right: ${props => props.viewMode === 'list' ? '8px' : '0'};
+    margin-bottom: ${props => props.viewMode === 'grid' ? '10px' : '0'};
   }
 
   &::before {
@@ -228,6 +248,14 @@ const PokemonId = styled.span<{
     font-size: ${props => props.viewMode === 'grid' ? '0.8rem' : '0.9rem'};
     top: 12px;
     right: 12px;
+  }
+  
+  @media (max-width: 360px) {
+    padding: ${props => props.viewMode === 'grid' ? '3px 8px' : '4px 10px'};
+    font-size: ${props => props.viewMode === 'grid' ? '0.7rem' : '0.8rem'};
+    top: 8px;
+    right: 8px;
+    border-radius: 20px;
   }
 `;
 
@@ -323,6 +351,15 @@ const PokemonType = styled.span<{
     padding: ${props => props.viewMode === 'grid' ? '4px 8px' : '4px 10px'};
     font-size: ${props => props.viewMode === 'grid' ? '0.7rem' : '0.75rem'};
     border-radius: 20px;
+  }
+  
+  @media (max-width: 360px) {
+    padding: ${props => props.viewMode === 'grid' ? '3px 6px' : '3px 8px'};
+    font-size: ${props => props.viewMode === 'grid' ? '0.65rem' : '0.7rem'};
+    border-radius: 15px;
+    box-shadow: ${props => props.isDarkMode
+      ? '0 2px 5px rgba(0, 0, 0, 0.15)'
+      : '0 2px 5px rgba(0, 0, 0, 0.1)'};
   }
   
   ${Card}:hover & {
@@ -437,6 +474,7 @@ const StatValue = styled.span<{ isDarkMode: boolean }>`
 
 const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, viewMode = 'list' }) => {
   const { darkMode } = useTheme();
+  const dispatch = useDispatch();
   
   // Get main stats to display
   const hp = pokemon.stats.find(stat => stat.stat.name === 'hp')?.base_stat || 0;
@@ -444,23 +482,34 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, viewMode = 'list' })
   const defense = pokemon.stats.find(stat => stat.stat.name === 'defense')?.base_stat || 0;
   
   // Get the primary type for background color
-  const primaryType = pokemon.types[0]?.type.name || 'normal';
-  const bgColor = getBackgroundColorByType(primaryType);
-  const typeHexColor = typeColors[primaryType] || typeColors.normal;
-  const textColor = '#ffffff';
+  const primaryType = pokemon.types[0].type.name;
+  const bgColor = getBackgroundColorByType(primaryType, true);
+  const isLight = isColorLight(bgColor);
   
-  // Check if background color is light or dark
-  const isLight = isColorLight(typeHexColor);
+  // Determine text color based on background color lightness
+  const textColor = isLight ? '#333' : 'white';
+  
+  const handleCardClick = () => {
+    // Add to recently viewed list in Redux when card is clicked
+    dispatch(addToRecentlyViewed(pokemon.id.toString()));
+  };
   
   return (
     <Card 
-      to={`/pokemon/${pokemon.id}`} 
+      to={`/pokemon/${pokemon.id}`}
       viewMode={viewMode}
       bgColor={bgColor}
       textColor={textColor}
       isLight={isLight}
       isDarkMode={darkMode}
+      onClick={handleCardClick}
     >
+      <FavoriteButton 
+        pokemonId={pokemon.id.toString()} 
+        pokemon={pokemon}
+        viewMode={viewMode}
+      />
+      
       <PokemonId 
         viewMode={viewMode} 
         isLight={isLight}

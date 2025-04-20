@@ -1,10 +1,14 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
-interface LoadingProps {
-  size?: 'small' | 'medium' | 'large';
-  message?: string;
-}
+const rotate = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
 
 const bounce = keyframes`
   0%, 100% {
@@ -15,31 +19,43 @@ const bounce = keyframes`
   }
 `;
 
-const LoadingContainer = styled.div`
+const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 40px;
   width: 100%;
 `;
 
-const PokeballSpinner = styled.div<{ size: string }>`
-  position: relative;
-  width: ${({ size }) => (size === 'small' ? '30px' : size === 'large' ? '70px' : '50px')};
-  height: ${({ size }) => (size === 'small' ? '30px' : size === 'large' ? '70px' : '50px')};
-  background: linear-gradient(to bottom, #ef5350 0%, #ef5350 50%, white 50%, white 100%);
+const LoadingText = styled.p`
+  color: var(--text-light);
+  margin-top: 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  
+  .dark-mode & {
+    color: var(--text-dark);
+  }
+`;
+
+const Pokeball = styled.div`
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  border: ${({ size }) => (size === 'small' ? '2px' : '3px')} solid #333;
-  animation: ${bounce} 0.8s ease-in-out infinite;
+  background: linear-gradient(to bottom, #ff1a1a 0%, #ff1a1a 50%, white 50%, white 100%);
+  position: relative;
+  animation: ${rotate} 1.5s linear infinite, ${bounce} 0.8s ease-in-out infinite;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   
   &::before {
     content: '';
     position: absolute;
-    top: calc(50% - 2px);
-    left: 0;
-    width: 100%;
-    height: 4px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 3px;
     background-color: #333;
   }
   
@@ -49,33 +65,21 @@ const PokeballSpinner = styled.div<{ size: string }>`
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: ${({ size }) => (size === 'small' ? '10px' : size === 'large' ? '25px' : '15px')};
-    height: ${({ size }) => (size === 'small' ? '10px' : size === 'large' ? '25px' : '15px')};
+    width: 20px;
+    height: 20px;
     background-color: white;
     border-radius: 50%;
-    border: ${({ size }) => (size === 'small' ? '2px' : '3px')} solid #333;
+    border: 3px solid #333;
+    z-index: 2;
   }
 `;
 
-const LoadingMessage = styled.p`
-  margin-top: 16px;
-  font-size: 1rem;
-  color: var(--text-light);
-  
-  .dark-mode & {
-    color: var(--text-dark);
-  }
-`;
-
-const Loading: React.FC<LoadingProps> = ({ 
-  size = 'medium',
-  message = 'Loading...'
-}) => {
+const Loading: React.FC<{ text?: string }> = ({ text = 'Loading Pokémon data...' }) => {
   return (
-    <LoadingContainer>
-      <PokeballSpinner size={size} />
-      {message && <LoadingMessage>{message}</LoadingMessage>}
-    </LoadingContainer>
+    <Container>
+      <Pokeball />
+      <LoadingText>{text}</LoadingText>
+    </Container>
   );
 };
 

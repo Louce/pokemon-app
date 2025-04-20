@@ -196,7 +196,7 @@ export const getPokemonByType = async (type: string): Promise<PokemonListRespons
   }
 };
 
-export const searchPokemon = async (query: string): Promise<PokemonDetail[]> => {
+export const searchPokemon = async (query: string, isSuggestion = false): Promise<PokemonDetail[]> => {
   try {
     // First get a list of all pokemon that match the query
     const response = await axios.get(`${BASE_URL}/pokemon`, {
@@ -207,8 +207,11 @@ export const searchPokemon = async (query: string): Promise<PokemonDetail[]> => 
       pokemon.name.toLowerCase().includes(query.toLowerCase())
     );
     
-    // Then fetch details for each matching pokemon (limit to first 10 for performance)
-    const pokemonDetailsPromises = results.slice(0, 10).map((pokemon: { name: string }) => 
+    // For suggestions, limit to 5 results for better performance
+    const limit = isSuggestion ? 5 : 10;
+    
+    // Then fetch details for each matching pokemon
+    const pokemonDetailsPromises = results.slice(0, limit).map((pokemon: { name: string }) => 
       getPokemonDetail(pokemon.name)
     );
     

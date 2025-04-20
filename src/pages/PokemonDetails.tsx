@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
@@ -37,6 +37,45 @@ const statColors = {
   'special-defense': '#78C850',
   speed: '#F8D030'
 };
+
+// Animation variants - defined outside component to prevent recreation on each render
+const cardVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { 
+      duration: 0.8,
+      ease: [0.2, 0.8, 0.2, 1]
+    }
+  }
+};
+
+const imageVariants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: { 
+    scale: 1, 
+    opacity: 1,
+    transition: { 
+      delay: 0.3,
+      duration: 0.8,
+      ease: [0.2, 0.8, 0.2, 1]
+    }
+  },
+  hover: { 
+    y: -10,
+    scale: 1.05,
+    transition: { 
+      duration: 0.5,
+      ease: [0.2, 0.8, 0.2, 1],
+      yoyo: Infinity,
+      repeatDelay: 0.5
+    }
+  }
+};
+
+// Default fallback image for Pokemon sprites
+const fallbackPokemonImage = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
 
 const DetailsContainer = styled.div`
   padding: 20px;
@@ -389,7 +428,7 @@ const EvolutionArrow = styled.div`
   margin: 0 10px;
 `;
 
-// Helper functions
+// Helper functions moved outside component to avoid recreation on render
 const getEnglishDescription = (species: any) => {
   if (!species || !species.flavor_text_entries || species.flavor_text_entries.length === 0) {
     return null;
@@ -416,12 +455,74 @@ const getEnglishGenus = (species: any) => {
   return englishGenus ? englishGenus.genus : null;
 };
 
+// Extract ID from URL
+const getIdFromUrl = (url: string): string => {
+  const matches = url.match(/\/pokemon-species\/(\d+)\//);
+  return matches ? matches[1] : '1';
+};
+
+// Helper function to render evolution details
+const renderEvolutionDetails = (details: any): React.ReactNode => {
+  if (!details) return null;
+  
+  let evolutionText = '';
+  
+  if (details.min_level) {
+    evolutionText = `Level ${details.min_level}`;
+  } else if (details.item) {
+    evolutionText = `Use ${details.item.name.replace('-', ' ')}`;
+  } else if (details.trigger?.name === 'trade') {
+    evolutionText = 'Trade';
+  } else if (details.trigger?.name) {
+    evolutionText = details.trigger.name.replace('-', ' ');
+  }
+  
+  return evolutionText ? <EvolutionDetail>{evolutionText}</EvolutionDetail> : null;
+};
+
+// Evolution stage component for better reuse and maintainability
+const EvolutionStageItem = ({ species, details }: { species: any, details?: any }) => {
+  if (!species) return null;
+  
+  const id = getIdFromUrl(species.url);
+  
+  return (
+    <EvolutionStage>
+      <EvolutionImage>
+        <img
+          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`}
+          alt={species.name}
+          onError={(e) => { (e.target as HTMLImageElement).src = fallbackPokemonImage; }}
+        />
+      </EvolutionImage>
+      <EvolutionName to={`/pokemon/${id}`}>
+        {species.name}
+      </EvolutionName>
+      {details && renderEvolutionDetails(details)}
+    </EvolutionStage>
+  );
+};
+
 const PokemonDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { pokemon, species, evolutionChain, loading, error } = usePokemonDetail(id);
   
+  // Memoize derived values to prevent recalculation on each render
+  const { pokemonDescription, pokemonGenus, typeColor } = useMemo(() => {
+    if (!pokemon || !species) {
+      return { pokemonDescription: null, pokemonGenus: null, typeColor: typeColors.default };
+    }
+    
+    const primaryType = pokemon.types[0]?.type.name || 'default';
+    return {
+      pokemonDescription: getEnglishDescription(species),
+      pokemonGenus: getEnglishGenus(species),
+      typeColor: typeColors[primaryType as keyof typeof typeColors] || typeColors.default
+    };
+  }, [pokemon, species]);
+  
   if (loading) {
-    return <Loading message="Loading Pokémon details..." />;
+    return <Loading text="Loading Pokémon details..." />;
   }
   
   if (error) {
@@ -444,52 +545,6 @@ const PokemonDetails: React.FC = () => {
     );
   }
   
-  const pokemonDescription = getEnglishDescription(species);
-  const pokemonGenus = getEnglishGenus(species);
-  
-  // Default fallback image for Pokemon sprites
-  const fallbackPokemonImage = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
-  
-  // Get primary type color for the card background
-  const primaryType = pokemon.types[0]?.type.name || 'default';
-  const typeColor = typeColors[primaryType as keyof typeof typeColors] || typeColors.default;
-  
-  // Card animations
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        duration: 0.8,
-        ease: [0.2, 0.8, 0.2, 1]
-      }
-    }
-  };
-  
-  const imageVariants = {
-    hidden: { scale: 0.8, opacity: 0 },
-    visible: { 
-      scale: 1, 
-      opacity: 1,
-      transition: { 
-        delay: 0.3,
-        duration: 0.8,
-        ease: [0.2, 0.8, 0.2, 1]
-      }
-    },
-    hover: { 
-      y: -10,
-      scale: 1.05,
-      transition: { 
-        duration: 0.5,
-        ease: [0.2, 0.8, 0.2, 1],
-        yoyo: Infinity,
-        repeatDelay: 0.5
-      }
-    }
-  };
-  
   return (
     <DetailsContainer>
       <BackButton to="/">Back to Pokémon List</BackButton>
@@ -510,6 +565,7 @@ const PokemonDetails: React.FC = () => {
             <img
               src={pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default}
               alt={pokemon.name}
+              onError={(e) => { (e.target as HTMLImageElement).src = fallbackPokemonImage; }}
             />
           </PokemonImage>
           
@@ -597,56 +653,25 @@ const PokemonDetails: React.FC = () => {
             <SectionTitle>Evolution Chain</SectionTitle>
             <EvolutionChainContainer>
               {/* First evolution (base form) */}
-              <EvolutionStage>
-                <EvolutionImage>
-                  <img
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${getIdFromUrl(evolutionChain.chain.species.url)}.png`}
-                    alt={evolutionChain.chain.species.name}
-                    onError={(e) => { (e.target as HTMLImageElement).src = fallbackPokemonImage; }}
-                  />
-                </EvolutionImage>
-                <EvolutionName to={`/pokemon/${getIdFromUrl(evolutionChain.chain.species.url)}`}>
-                  {evolutionChain.chain.species.name}
-                </EvolutionName>
-              </EvolutionStage>
+              <EvolutionStageItem species={evolutionChain.chain.species} />
               
               {/* Second evolution */}
               {evolutionChain.chain.evolves_to.length > 0 && (
                 <>
                   <EvolutionArrow>→</EvolutionArrow>
-                  
-                  <EvolutionStage>
-                    <EvolutionImage>
-                      <img
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${getIdFromUrl(evolutionChain.chain.evolves_to[0].species.url)}.png`}
-                        alt={evolutionChain.chain.evolves_to[0].species.name}
-                        onError={(e) => { (e.target as HTMLImageElement).src = fallbackPokemonImage; }}
-                      />
-                    </EvolutionImage>
-                    <EvolutionName to={`/pokemon/${getIdFromUrl(evolutionChain.chain.evolves_to[0].species.url)}`}>
-                      {evolutionChain.chain.evolves_to[0].species.name}
-                    </EvolutionName>
-                    {renderEvolutionDetails(evolutionChain.chain.evolves_to[0].evolution_details[0])}
-                  </EvolutionStage>
+                  <EvolutionStageItem 
+                    species={evolutionChain.chain.evolves_to[0].species} 
+                    details={evolutionChain.chain.evolves_to[0].evolution_details[0]} 
+                  />
                   
                   {/* Third evolution */}
                   {evolutionChain.chain.evolves_to[0].evolves_to.length > 0 && (
                     <>
                       <EvolutionArrow>→</EvolutionArrow>
-                      
-                      <EvolutionStage>
-                        <EvolutionImage>
-                          <img
-                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${getIdFromUrl(evolutionChain.chain.evolves_to[0].evolves_to[0].species.url)}.png`}
-                            alt={evolutionChain.chain.evolves_to[0].evolves_to[0].species.name}
-                            onError={(e) => { (e.target as HTMLImageElement).src = fallbackPokemonImage; }}
-                          />
-                        </EvolutionImage>
-                        <EvolutionName to={`/pokemon/${getIdFromUrl(evolutionChain.chain.evolves_to[0].evolves_to[0].species.url)}`}>
-                          {evolutionChain.chain.evolves_to[0].evolves_to[0].species.name}
-                        </EvolutionName>
-                        {renderEvolutionDetails(evolutionChain.chain.evolves_to[0].evolves_to[0].evolution_details[0])}
-                      </EvolutionStage>
+                      <EvolutionStageItem 
+                        species={evolutionChain.chain.evolves_to[0].evolves_to[0].species} 
+                        details={evolutionChain.chain.evolves_to[0].evolves_to[0].evolution_details[0]} 
+                      />
                     </>
                   )}
                 </>
@@ -658,30 +683,5 @@ const PokemonDetails: React.FC = () => {
     </DetailsContainer>
   );
 };
-
-// Helper function to extract ID from URL
-function getIdFromUrl(url: string): string {
-  const matches = url.match(/\/pokemon-species\/(\d+)\//);
-  return matches ? matches[1] : '1';
-}
-
-// Helper function to render evolution details
-function renderEvolutionDetails(details: any): React.ReactNode {
-  if (!details) return null;
-  
-  let evolutionText = '';
-  
-  if (details.min_level) {
-    evolutionText = `Level ${details.min_level}`;
-  } else if (details.item) {
-    evolutionText = `Use ${details.item.name.replace('-', ' ')}`;
-  } else if (details.trigger?.name === 'trade') {
-    evolutionText = 'Trade';
-  } else if (details.trigger?.name) {
-    evolutionText = details.trigger.name.replace('-', ' ');
-  }
-  
-  return evolutionText ? <EvolutionDetail>{evolutionText}</EvolutionDetail> : null;
-}
 
 export default PokemonDetails;
